@@ -2,6 +2,15 @@
 
 基于 BewlyBewly 的 bilibili 浏览器扩展，使用 Vue 3、TypeScript、Vite、UnoCSS 和 `pnpm`。
 
+## Safari 适配版（本仓库专属，优先于下文）
+
+- 本仓库 `IgnatAi401/BewlyCat-Safari` 是上游 `keleus/BewlyCat` 的非官方 Safari 适配版，面向其他用户发布。仓库结构、同步上游、版本、发布与分发见 [Safari 路线图](docs/safari/ROADMAP.md)，相关任务先读它。
+- 开发在 `safari` 分支（默认分支）；`main` 只镜像上游，不在其上提交。`safari` 已公开，同步上游用 `git merge`，**禁止 rebase 和强制推送**。
+- Safari 专属逻辑放在 `src/safari/`；上游文件只加用 `__SAFARI__` 包裹的最少接入点，并登记到路线图的「接入点清单」。
+- 构建与验证用 `pnpm typecheck`、`pnpm build-safari`，产物在 `extension-safari/`；浏览器实测仍遵循下文「问题判断与验证边界」。
+- 上游 `LICENSE` 禁止封装为桌面应用或独立客户端分发；未获上游作者许可，不做 Xcode App 封装或上架。不修改 `LICENSE`。
+- 下文「PR 不提交 `AGENTS.md`」针对向上游提交的 PR；本仓库内可以提交 `AGENTS.md` 和 `docs/safari/`，但不把它们带进给上游的 PR。
+
 ## 按任务定位
 
 - 页面注入：`src/contentScripts/index.ts`；后台消息与 API：`src/background/`；扩展配置：`src/manifest.ts`。
