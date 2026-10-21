@@ -3,3 +3,7 @@
 
 # Markdown containing stray carriage returns must still be treated as text.
 *.md text eol=lf
+
+# BewlyCat-Safari: keep our own agent docs when merging upstream (needs: git config merge.ours.driver true)
+AGENTS.md merge=ours
+CLAUDE.md merge=ours

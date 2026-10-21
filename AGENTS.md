@@ -1,54 +1,34 @@
-# BewlyCat Agent 指南
+# BewlyCat-Safari Agent 指南
 
-基于 BewlyBewly 的 bilibili 浏览器扩展，使用 Vue 3、TypeScript、Vite、UnoCSS 和 `pnpm`。
+本仓库 `IgnatAi401/BewlyCat-Safari` 是上游 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 的非官方 Safari 适配版：bilibili 浏览器扩展，Vue 3、TypeScript、Vite、UnoCSS、`pnpm`。仓库结构、同步上游、发布与用户使用方式见 [Safari 路线图](docs/safari/ROADMAP.md)，相关任务先读它。
 
-## Safari 适配版（本仓库专属，优先于下文）
+## 只遵循本仓库的指导文档
 
-- 本仓库 `IgnatAi401/BewlyCat-Safari` 是上游 `keleus/BewlyCat` 的非官方 Safari 适配版，面向其他用户发布。仓库结构、同步上游、版本、发布与分发见 [Safari 路线图](docs/safari/ROADMAP.md)，相关任务先读它。
-- 开发在 `safari` 分支（默认分支）；`main` 只镜像上游，不在其上提交。`safari` 已公开，同步上游用 `git merge`，**禁止 rebase 和强制推送**。
-- Safari 专属逻辑放在 `src/safari/`；上游文件只加用 `__SAFARI__` 包裹的最少接入点，并登记到路线图的「接入点清单」。
-- 构建与验证用 `pnpm typecheck`、`pnpm build-safari`，产物在 `extension-safari/`；浏览器实测仍遵循下文「问题判断与验证边界」。
-- 上游 `LICENSE` 禁止封装为桌面应用或独立客户端分发；未获上游作者许可，不做 Xcode App 封装或上架。不修改 `LICENSE`。
-- 下文「PR 不提交 `AGENTS.md`」针对向上游提交的 PR；本仓库内可以提交 `AGENTS.md` 和 `docs/safari/`，但不把它们带进给上游的 PR。
+- 本文件和 `CLAUDE.md` 是本仓库自有版本，合并上游时通过 `.gitattributes` 的 `merge=ours` 保留，不接受上游改动。
+- 上游的 Agent / 开发流程文档不作为本仓库规则，不主动加载：`docs/agent-style-guide.md`、`docs/agent-pr-review.md`、`docs/CONTRIBUTING*.md`、`.github/scripts/pr-policy-check.mjs`。只在需要了解上游现有写法时当作参考资料查阅，与本文冲突时以本文为准。
 
-## 按任务定位
+## 分支与 Git
 
-- 页面注入：`src/contentScripts/index.ts`；后台消息与 API：`src/background/`；扩展配置：`src/manifest.ts`。
-- UI：`src/components/`；状态与设置：`src/stores/`、`src/logic/storage.ts`；翻译：`src/_locales/`。
-- 主 UI 位于 Shadow DOM 内。改样式时使用 `src/styles/variables.scss` 的 token，并查阅 [样式规范](docs/agent-style-guide.md) 的相关章节；共享控件、排版、尺寸、间距、圆角和浮层规范均保留在该文档中。
-- 仅在搭建开发环境、加载真实扩展或打包交付时查阅 [贡献指南](docs/CONTRIBUTING-cmn_CN.md)。其构建说明用于开发者和发布流程，不要求 Agent 为日常验证打包。
-- PR 拉取、审查、本地集成测试或合并使用 [PR 工作流](docs/agent-pr-review.md)。一般代码修改不加载该流程。
-- i18n 修改保留现有键结构和注释，不使用会自动重排键或删除注释的翻译扩展。
+- 开发在 `safari` 分支（默认分支）；`main` 只镜像上游，不在其上提交。
+- `safari` 已公开、有其他用户在拉取：同步上游用 `git merge`，**禁止 rebase、改写历史和强制推送**。
+- 提交使用 Conventional Commits，冒号后用中文（如 `fix: 修复 Safari 下主题切换`）；同步上游用 `merge: 同步上游 vX.Y.Z`。
+- 提交、推送、合并上游须用户明确授权；不丢弃或混入用户现有修改。
+- 不向上游提交本仓库专属文件（`AGENTS.md`、`CLAUDE.md`、`docs/safari/`、`src/safari/`）。
 
-## 子代理使用
+## 代码组织
 
-- 默认零子代理，由主 Agent 完成开发、排查、审查和验证。独立文件读取、搜索或检查可直接并行调用工具，无需为此创建子代理。
-- 仅在用户明确要求，或独立任务能在计入交接成本后明显缩短耗时、具体疑点需要独立判断时委派；使用满足需要的最少数量。
-- 技能或专用 Agent 可用本身不是委派理由，不默认安排多人复核或投票。PR 审查也遵循此原则，不因任务属于 PR 就自动委派。
-- 已委派的范围由一个明确执行者负责，主 Agent 整合结果；仅在证据缺失、矛盾或相关内容变化时补查，不重复整轮审查与验证。
+- Safari 专属逻辑放在 `src/safari/`；上游文件只加用 `__SAFARI__` 包裹的最少接入点，放在函数开头或结尾，并登记到路线图的「接入点清单」。
+- 不直接改写上游大文件（`src/inject/index.ts`、`src/logic/storage.ts` 等）的原有逻辑。
+- Safari 专属资源以 `-safari` 结尾，如 `assets/rules-safari.json`。
+- 代码定位：页面注入 `src/contentScripts/`、页面脚本 `src/inject/`、后台 `src/background/`、清单 `src/manifest.ts`、UI `src/components/`、设置 `src/logic/storage.ts`、翻译 `src/_locales/`。主 UI 在 Shadow DOM 内，样式用 `src/styles/variables.scss` 的 token。
 
-## 问题判断与验证边界
+## 检查与验证
 
-- 优先通过实际代码、调用链、状态与数据流及运行上下文判断问题，无需额外说明代码依据；无法确定的部分如实说明。
-- 不创建或使用临时 HTML、独立复刻页面、模拟页面等虚拟页面进行测试。
-- 仅在用户主动要求时做页面调试、页面验证或调用 `chrome-devtools-mcp`。页面验证使用真实项目和实际运行环境；MCP 还须已安装且可调用。普通“修复”“审查”“测试”请求不自动授权页面操作。
-- 此边界适用于所有浏览器工具和 Skills，包括 Browser QA Factory、内置 Browser 与可视化工具；不能通过换工具或生成 mockup 绕过。
+- 静态检查：`pnpm exec eslint <相关文件>`、`pnpm typecheck`；改动 Safari 构建相关内容时运行 `pnpm build-safari`，产物在 `extension-safari/`。
+- 本仓库不发布构建产物，`extension-safari/` 不提交。
+- 只在用户要求时做浏览器实测；实测在真实 Safari 中加载 `extension-safari/` 进行，不用模拟页面代替。
+- 结束时说明改动、实际运行的检查及结果、未解决事项。
 
-## 本地检查
+## 许可证
 
-- 按改动选择静态检查：`pnpm exec eslint <相关文件>`、`pnpm lint`、`pnpm typecheck`。未新增或改变依赖、导出时通常无需 `pnpm knip`。
-- 当前没有 `test` 脚本或已配置的单元测试套件；CI 中名为 Test 的 job 执行 lint、类型检查、Knip 和构建。不要假定存在隔离于真实账号的测试环境。
-- 日常验证不运行生产构建或打包命令。仅需持续编译时使用 `pnpm dev` / `pnpm dev-firefox`；它们内部的开发模式 `build:*` 子命令属于该开发流程。无需为纯文档或静态检查启动 dev。
-- dev 启动会清理对应 `extension*` 产物；优先复用已有开发进程，避免覆盖正在使用的构建。Chrome/Edge 产物为 `extension/`，Firefox 为 `extension-firefox/`。
-- 已授权任务内的本地编辑、静态检查、修复本次改动造成的检查失败及针对性复验可自主完成，不逐步询问。检查通过后，只有新改动、失败或未解决风险才需要扩大或重复验证。
-
-## Git 与提交
-
-- `pre-commit` 自动运行 `pnpm lint-staged`，`pre-push` 自动运行 `pnpm lint && pnpm typecheck`。不要仅为提交或推送重复预跑同一检查；保留 hooks，除非用户明确要求跳过。
-- 仅审查不改源码、不合并、不提交、不推送。提交、合并、推送须在用户明确授权的范围内执行，已有授权无需重复确认；不丢弃、覆盖或混入用户现有修改。
-- 提交使用 Conventional Commits，冒号后用中文；支持 `feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert/merge`。有对应 issue 时附 `#<issue>`；合并格式为 `merge: 合并 PR #<number> <标题>`。
-- PR 不提交 `AGENTS.md`、本地测试文件或测试产物；实际策略见 `.github/scripts/pr-policy-check.mjs`。本地维护 Agent 配置不代表允许通过 PR 提交这些文件。
-
-## 完成条件
-
-实现任务完成意味着请求范围内的改动已完成且适用检查通过；复杂任务还需覆盖相关调用方、状态/设置、i18n 和文档中实际受影响的部分。继续修复本次改动引入的问题，不停在第一版实现。若有无法解决的环境或外部阻断，明确标为未完成并说明剩余事项，不当作验证通过。收尾简述改动、验证结果及限制；页面验证与 Git 写入仍遵循上述授权边界。
+- 保留上游 `LICENSE` 原文，不修改。上游禁止封装为桌面应用或独立客户端分发；不做 Xcode App 封装或上架。

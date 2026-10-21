@@ -1,3 +1,3 @@
-# BewlyCat 项目指令
+# BewlyCat-Safari 项目指令
 
-遵循 [AGENTS.md](AGENTS.md) 中的项目规则与按任务加载的参考文档。这里不维护第二份工程规范。
+遵循 [AGENTS.md](AGENTS.md) 中的本仓库规则。不加载上游的 Agent 指导文档（见 AGENTS.md「只遵循本仓库的指导文档」）。
