@@ -2,7 +2,7 @@
 
 只记录 Safari 适配部分的改动；上游功能更新见各版本对应的[上游 Release](https://github.com/keleus/BewlyCat/releases)。
 
-## v1.8.1-safari.1（未发布）
+## v1.8.1-safari.1（2026-10-21）
 
 基于上游 [v1.8.1](https://github.com/keleus/BewlyCat/releases/tag/v1.8.1)。本仓库取代旧的 `BewlyCat-Safari-Local`，构建好的扩展改为附在 Release 中下载。
 
