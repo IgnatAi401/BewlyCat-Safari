@@ -27,6 +27,7 @@ export default defineConfig(() => ({
   define: {
     '__DEV__': JSON.stringify(isDev),
     '__BUILD_COMMIT__': JSON.stringify(buildCommit),
+    '__SAFARI__': JSON.stringify(isSafari),
     'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
     'process.env.FIREFOX': isFirefox ? 'true' : 'false',
     'process.env.SAFARI': isSafari ? 'true' : 'false',

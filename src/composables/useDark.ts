@@ -2,6 +2,7 @@ import { usePreferredDark } from '@vueuse/core'
 
 import { DARK_MODE_BASE_COLOR_CHANGE, IFRAME_DARK_MODE_CHANGE } from '~/constants/globalEvents'
 import { settings } from '~/logic'
+import { requestSafariBilibiliThemeChange } from '~/safari/pageBridge'
 import { isVideoPlaybackPage, setCookie } from '~/utils/main'
 
 const currentUrl = ref(typeof location === 'undefined' ? '' : location.href)
@@ -123,6 +124,10 @@ function syncBilibiliTheme(isDark: boolean) {
     return
 
   lastThemeChangeState = isDark
+  if (__SAFARI__) {
+    requestSafariBilibiliThemeChange(theme)
+    return
+  }
   window.dispatchEvent(new CustomEvent('global.themeChange', { detail: theme }))
 }
 

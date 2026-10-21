@@ -4,6 +4,7 @@ import type { Manifest } from 'webextension-polyfill'
 import type PkgType from '../package.json'
 import { isDev, isFirefox, isSafari, port, r } from '../scripts/utils'
 import { CONTENT_SCRIPT_EXCLUDE_MATCHES, CONTENT_SCRIPT_MATCHES } from './constants/contentScript'
+import { applySafariManifest } from './safari/manifest'
 
 export async function getManifest() {
   const pkg = await fs.readJSON(r('package.json')) as typeof PkgType
@@ -114,6 +115,9 @@ export async function getManifest() {
       },
     }
   }
+
+  if (isSafari)
+    applySafariManifest(manifest, pkg.version)
 
   return manifest
 }

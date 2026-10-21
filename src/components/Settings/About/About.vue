@@ -8,6 +8,7 @@ import Dialog from '~/components/Dialog.vue'
 import Radio from '~/components/Radio.vue'
 import { useSettingsCloudSyncPreference } from '~/composables/useSettingsCloudSyncPreference'
 import { settings } from '~/logic'
+import SafariUpdateCheckSettings from '~/safari/updateCheck/UpdateCheckSettings.vue'
 import { getBrowserInfo, parseBrowserInfo } from '~/utils/browserInfo'
 import { sendMessage } from '~/utils/messaging'
 import type { SettingsCloudSyncEnableResponse, SettingsCloudSyncStatus } from '~/utils/settingsCloudSyncProtocol'
@@ -236,6 +237,7 @@ async function handleCopyEnvironmentInfo() {
       </section>
 
       <section class="about-maintenance">
+        <SafariUpdateCheckSettings />
         <SettingsItemGroup :title="$t('settings.group_environment_info')">
           <SettingsItem
             :title="$t('settings.copy_environment_info')"

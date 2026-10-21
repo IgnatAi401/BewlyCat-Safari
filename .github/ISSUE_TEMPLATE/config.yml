@@ -1,0 +1,4 @@
+contact_links:
+  - name: 上游 BewlyCat 问题（官方版也能复现的问题、功能建议）
+    url: https://github.com/keleus/BewlyCat/issues
+    about: 与 Safari 无关的问题请反馈到上游仓库。

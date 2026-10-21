@@ -7,6 +7,7 @@ import { DEFAULT_SEARCH_BAR_CHARACTER } from '~/constants/imgs'
 import type { HomeSubPage } from '~/contentScripts/views/Home/types'
 import type { AppPage } from '~/enums/appEnums'
 import { VideoPageTopBarConfig } from '~/enums/appEnums'
+import { applySafariSettingsFixes } from '~/safari/settings'
 import {
   MOBILE_LIST_LAYOUT_BREAKPOINT,
   normalizeListLayoutBreakpoint,
@@ -1395,6 +1396,9 @@ export const settings = useSettingsStorage(originalSettings, {
         settings.value.gridColumns = migratedGridColumns
       })
     }
+
+    if (__SAFARI__)
+      applySafariSettingsFixes(record)
   },
 })
 

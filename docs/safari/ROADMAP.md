@@ -36,15 +36,22 @@
 
 | 上游文件 | 位置 | 用途 |
 | --- | --- | --- |
-| `.gitattributes` | 末尾 | `AGENTS.md`、`CLAUDE.md` 使用 `merge=ours` |
-| `vite.config.ts` | `replace()` | 定义 `__SAFARI__` |
+| `.gitattributes` | 末尾 | `AGENTS.md`、`CLAUDE.md`、`README.md` 使用 `merge=ours` |
+| `README.md` | 全文 | 改写为 Safari 版说明（`merge=ours`，上游 README 改动不合入） |
+| `vite.config.ts` | `replace()` | 定义 `__SAFARI__`（内容脚本、页面脚本） |
+| `tsup.config.ts` | `define` | 定义 `__SAFARI__`（后台） |
 | `src/global.d.ts` | 顶部 | 声明 `__SAFARI__` |
-| `src/manifest.ts` | `getManifest()` | 注入范围、权限、规则集、最低 Safari 18.4 |
-| `src/logic/storage.ts` | 设置迁移 | 关闭抽屉打开方式与通知抽屉 |
-| `src/composables/useDark.ts` | `syncBilibiliTheme()` | 主题切换转交页面脚本 |
-| `src/inject/index.ts` | 评论区样式表、`message` 监听 | 评论区主题色、派发 `global.themeChange` |
+| `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：版本号、注入范围、权限、规则集、最低 Safari 18.4 |
+| `src/logic/storage.ts` | `settings` 的 `normalize` 末尾 | `applySafariSettingsFixes()`：关闭抽屉打开方式与通知抽屉 |
+| `src/composables/useDark.ts` | `syncBilibiliTheme()` 末尾 | 主题切换转交页面脚本 |
+| `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`message` 监听之前 | 评论区主题色样式；注册 Safari 消息桥（派发 `global.themeChange`） |
+| `src/background/index.ts` | 末尾；`syncPreventMobileRedirectRule()` 的 `updateDynamicRules` 参数 | `setupSafariUpdateCheck()`；`adaptSafariRuleUpdate()` 改写规则 |
+| `src/background/appClient.ts` | `syncAppClientHeaderRules()` 的 `updateSessionRules` 参数 | `adaptSafariRuleUpdate()`：Safari 不支持正则 `\|` 和 `sec-ch-ua*` 请求头 |
+| `src/background/loginStateWatcher.ts` | `setupLoginStateWatcher()` 开头 | `setupSafariLoginStateWatcher()`：Safari 的 `cookies.onChanged` 不带 changeInfo，`cookies` API 读不到 B 站 Cookie，改用 nav 接口判断 |
+| `src/contentScripts/index.ts` | `onDOMLoaded()` 末尾 | `mountSafariUpdateBanner()` |
+| `src/components/Settings/About/About.vue` | `about-maintenance` 开头 | 「BewlyCat Safari」设置组（检查更新开关、立即检查） |
 
-（后 6 项待从旧仓库 `patches/safari.patch` 迁入后核对。）
+各接入点同时有对应的 `import` 行；对应实现均在 `src/safari/`。
 
 ## 4. 版本号与 Release
 
@@ -59,7 +66,7 @@
 
 - 后台定时（启动时及每 12 小时，结果缓存在 `storage.local`）请求 `https://api.github.com/repos/IgnatAi401/BewlyCat-Safari/releases/latest`，取 `tag_name` 解析出 `X.Y.Z.N`，与 `browser.runtime.getManifest().version` 比较。GitHub 未登录接口限 60 次/小时/IP，此频率足够。
 - 有新版本时，在 B 站页面由内容脚本显示提示条：新版本号、更新摘要、「查看更新」（打开 Release 页）、「忽略此版本」、「稍后提醒」。不自动下载或安装。
-- 设置中提供「检查更新」开关（默认开）和「立即检查」按钮；请求失败静默忽略，不影响扩展其他功能。
+- 设置中提供「检查更新」开关（默认开）和「立即检查」按钮；请求失败静默忽略（1 小时后才自动重试），不影响扩展其他功能。开关、忽略的版本和稍后提醒时间存在 `storage.local` 的 `safariUpdatePrefs`，不进入上游 `settings`。
 - 代码放在 `src/safari/updateCheck/`；接入点：后台入口一行启动、内容脚本一行挂载提示条、设置页一个开关，登记到接入点清单。
 - 临时扩展无法自动更新：提示条只引导用户按第 7 节手动升级。
 
@@ -118,9 +125,9 @@
 - [x] Fork 上游为 `IgnatAi401/BewlyCat-Safari`，配置 `upstream` 远程
 - [x] 以 `v1.8.1` 为基础创建 `safari` 分支，写入自有 `AGENTS.md`、`CLAUDE.md`、本路线图和 `merge=ours` 规则
 - [ ] 推送 `safari`，在 GitHub 设为默认分支并开启分支保护（禁止强推）
-- [ ] 应用旧仓库的 `patches/safari.patch` 作为首个功能提交，构建并实测
-- [ ] 将 Safari 逻辑重构到 `src/safari/`，更新接入点清单
-- [ ] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
-- [ ] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
+- [x] 应用旧仓库的 `patches/safari.patch`（构建通过，待 Safari 实测）
+- [x] 将 Safari 逻辑重构到 `src/safari/`，更新接入点清单
+- [x] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
+- [x] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
 - [ ] 发布 Release `v1.8.1-safari.1`，实测通过后归档 `BewlyCat-Safari-Local`
 - [ ] 同步上游最新版本（当前上游 `main` 已领先 `v1.8.1`）

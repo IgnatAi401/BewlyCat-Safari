@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill'
 
 import { CONTENT_SCRIPT_MATCHES } from '~/constants/contentScript'
 import { TOP_BAR_STATE_MESSAGE } from '~/constants/topBarState'
+import { setupSafariLoginStateWatcher } from '~/safari/loginStateWatcher'
 
 // 登录态相关的会话 Cookie（见 bilibili-API-collect docs/login/exit.md：
 // 登出会清空它们，登录/扫码登录会写入）
@@ -21,6 +22,9 @@ let broadcastTimer: ReturnType<typeof setTimeout> | null = null
  * 例行轮换等值变化会被标签页侧的 mid 比对自然过滤。
  */
 export function setupLoginStateWatcher() {
+  if (__SAFARI__)
+    return setupSafariLoginStateWatcher(scheduleBroadcastLoginStateChanged)
+
   browser.cookies.onChanged.addListener(({ cookie }) => {
     const normalizedDomain = cookie.domain.trim().toLowerCase().replace(/^\.+/, '')
     const isBilibiliDomain = normalizedDomain === 'bilibili.com' || normalizedDomain.endsWith('.bilibili.com')

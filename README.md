@@ -1,123 +1,77 @@
-# BewlyCat
-
-![GitHub Release](https://img.shields.io/github/v/release/keleus/BewlyCat?label=Github) ![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/oopkfefbgecikmfbbapnlpjidoomhjpl?label=Chrome) ![Edge Addons Version](https://img.shields.io/badge/dynamic/json?color=blue&label=Edge&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Faaammfjdfifgnfnbflolojihjfhdploj&prefix=v) ![Firefox Version](https://img.shields.io/amo/v/bewlycat?label=Firefox)
-
-![Github Downloads](https://img.shields.io/github/downloads/keleus/BewlyCat/total?label=Github%20Downloads) ![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/oopkfefbgecikmfbbapnlpjidoomhjpl?label=Chrome%20Users) ![Edge Addons Users](https://img.shields.io/badge/dynamic/json?label=Edge%20Users&query=%24.activeInstallCount&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Faaammfjdfifgnfnbflolojihjfhdploj) ![Firefox Users](https://img.shields.io/amo/users/bewlycat?label=Firefox%20Users)
-
-此项目基于[BewlyBewly](https://github.com/BewlyBewly/BewlyBewly)开发，并在其基础上进行功能扩充和调整，并合并了一些其他拓展的功能。
-
-<p align="center" style="margin-bottom: 0px !important;">
-<img width="300" alt="BewlyCat icon" src="./assets/icon-512.png"><br/>
-</p>
-
-<p align="center">只需对您的 Bilibili 主页进行一些小更改即可。</p>
-
-## 👋 介绍
+# BewlyCat for Safari
 
 > [!IMPORTANT]
-> 本插件及Fork代码禁止以任何形式的客户端封装！！！插件的目的是仅优化B站官方网站的使用体验。
+> **非官方 Safari 适配版**，基于 [keleus/BewlyCat](https://github.com/keleus/BewlyCat)（BewlyCat 又基于 [BewlyBewly](https://github.com/BewlyBewly/BewlyBewly)）。功能与主要代码均来自上游作者和贡献者，感谢他们的工作。本仓库只做让它在 Safari 中正常运行所需的最少改动。
 >
-> 该项目面向我个人使用习惯修改。当然，欢迎功能建议与bug反馈。
->
-> 浏览器拓展商店上架均同时提交审核，实际更新速度取决于各个商店审核速度。请勿在issue中催促审核，商店异常行为由商店导致！
->
-> 不会打包safari，也不会在项目里做大量的safari only适配，如果有需要欢迎自行打包。
->
-> 本项目由MIT许可在原项目基础上开发，并亦与原作者联系取得了授权，包括上架Chrome应用商店等权利。
+> 请勿将本项目封装为 App 或上架 App Store，也不要以上游作者名义发布。Safari 版的问题请在[本仓库 Issues](https://github.com/IgnatAi401/BewlyCat-Safari/issues) 反馈，不要打扰上游。
 
-> [!CAUTION]
-> 为了本项目能够在Github中直接被搜索到，项目将脱离BewlyBewly的Fork网络，成为一个独立的项目。但项目基于BewlyBewly是不变的～项目不会移除历史贡献者和原项目信息。
->
-> B站于2026年1月调整了首页推荐API，请更新至`1.5.6`版本及以上，以适配新的首页推荐，排行榜和分区。
+<p align="center">
+<img width="200" alt="BewlyCat icon" src="./assets/icon-512.png">
+</p>
 
-## 主要功能异同
+功能介绍见[上游 README](https://github.com/keleus/BewlyCat#readme)。本仓库**以源码分发**：每个版本发布一个 [GitHub Release](https://github.com/IgnatAi401/BewlyCat-Safari/releases)（只含源码），你在自己的 Mac 上构建后，作为 Safari 临时扩展加载。
 
-### 新增功能
+## 环境要求
 
-1. 新增视频卡片、顶栏链接后台打开的能力。
-2. 新增默认播放器样式设置，当播放器样式是默认和宽屏的时候会自动滚动到弹幕框与底部平齐。
-3. 新增用户面板大会员权益领取入口。
-4. 新增首页推荐前进后退的能力。
-5. 新增合集播放自动关闭功能（需要在设置里开启），方便挂合集听歌。
-6. 新增web模式推荐按照点赞/播放比例过滤视频的能力（需要设置里开启）
-7. 参考了`Extension for Bilibili Player`插件的快捷键，支持了其中大部分功能的自定义快捷键。
-8. 记住倍速比例功能，开启后会记住上次倍速
-9. 合集视频随机播放功能
-10. 视频详情页稍后再看外置
-11. 自定义暗色基准色，开启后会根据基准色调整暗黑模式的显示
-12. 新增合集视频保持默认播放模式功能
+- macOS + Safari 18.4 或更高版本
+- [Node.js](https://nodejs.org/) LTS 版本和 [pnpm](https://pnpm.io/)，例如用 Homebrew 安装：
 
-13. 局部音量均衡：在「设置 → Bilibili → 播放器 → 音量均衡」启用，平衡不同视频之间的音量，并通过播放器组件关闭原生均衡。支持目标响度、强度调整及运行状态显示，详见[算法与资源管理](docs/local-loudness.md)。
+  ```bash
+  brew install node pnpm
+  ```
 
-14. 收藏夹整理：在「设置 → Bewly 页面 → 收藏」为收藏夹设置 UP 主、分区、标题关键词组合规则，支持一键三连后自动同步到对应收藏夹，以及手动批量整理默认收藏夹（只复制，不移出默认收藏夹）。
+## 首次安装
 
-### 删除功能
+1. 下载源码（二选一）：
+   - 用 Git：`git clone https://github.com/IgnatAi401/BewlyCat-Safari.git`，然后 `cd BewlyCat-Safari`。
+   - 不用 Git：在 [Releases](https://github.com/IgnatAi401/BewlyCat-Safari/releases) 下载最新版本的「Source code (zip)」并解压，在终端进入解压后的文件夹。
+2. 安装依赖并构建：
 
-1. ~~删除了原插件广东话翻译~~广东话翻译由BewlyBewly插件原作者维护（缺少翻译情况下默认显示英文翻译结果）
-2. 删除了内置字体，减少打包体积（14.4M -> 600K）
-3. 删除了旧版顶栏（减少开发成本），并重构了原项目的顶栏组件（功能无差异）
-4. 删除了部分影响功能正常使用的动画（如抽屉打开关闭的动画）
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
 
-## ⬇️ 安装
+   ```bash
+   pnpm build-safari
+   ```
 
-### 在线安装
+   完成后会生成 `extension-safari/` 文件夹。
+3. 打开 **Safari → 设置 → 高级**，勾选「显示网页开发者功能」。
+4. 打开 **Safari → 设置 → 开发者**，勾选「允许未签名的扩展」，点击「添加临时扩展…」，选择第 2 步生成的 `extension-safari/` 文件夹（里面直接有 `manifest.json`；不要选仓库根目录）。
+5. 在 **Safari → 设置 → 扩展** 中启用 BewlyCat，并允许它访问 `bilibili.com` 和 `hdslb.com`（也可以在首次打开 B 站时按提示授权）。
+6. 打开或刷新 [Bilibili](https://www.bilibili.com/) 即可使用。
 
-[Chrome应用商店](https://chromewebstore.google.com/detail/oopkfefbgecikmfbbapnlpjidoomhjpl)
+> [!NOTE]
+> 不要同时启用多个 BewlyCat（例如商店版和本版本）。
 
-[Edge应用商店](https://microsoftedge.microsoft.com/addons/detail/bewlycat/aaammfjdfifgnfnbflolojihjfhdploj):审核周期不定
+## 更新
 
-[Firefox应用商店](https://addons.mozilla.org/en-US/firefox/addon/bewlycat/):已上线～（`1.0.2`版本已经修复抽屉问题）
+扩展会定期检查本仓库的新 Release，有新版本时在 B 站页面左下角提示（可在「设置 → 关于 → BewlyCat Safari」关闭或立即检查）。也可以在 GitHub 仓库点 **Watch → Custom → Releases** 接收邮件通知。
 
-> [!CAUTION]
-> 审核可能存在延迟，Chrome一般会晚30分钟-15天，Edge一般会晚3-30天，Firefox一般会晚1-30分钟
+临时扩展不能自动更新，需要手动升级：
 
-### 本地安装
+1. 获取新源码：
+   - 用 Git：在仓库目录执行 `git pull`（或 `git checkout <新版本标签>`）。
+   - 不用 Git：下载新版本的「Source code (zip)」并解压。
+2. 重新执行 `pnpm install --frozen-lockfile` 和 `pnpm build-safari`。
+3. 在 **Safari → 设置 → 开发者** 中移除旧的临时扩展，再重新添加 `extension-safari/`。只刷新网页不会加载新文件。
 
-[CI](https://github.com/keleus/BewlyCat/actions)：使用最新代码自动构建
+## 已知限制
 
-[Releases](https://github.com/keleus/BewlyCat/releases)：稳定版
+- 临时扩展在 Safari 退出后通常会被移除，下次需要重新添加（不必重新构建）。
+- 为保证稳定，扩展不注入 iframe，因此视频卡片「在抽屉中打开」和通知抽屉已强制关闭，改为新标签页打开；动态页视频弹窗等 iframe 内页面保持 B 站原样式。
+- 多语言路径（如 `/ja/video/...`）不在注入范围内。
+- 上游的「扩展更新后刷新页面」提示依赖 Safari 不支持的权限，Safari 版改用上面的新版本提示。
 
-#### Edge 和 Chrome(推荐)
+## 版本号
 
-> 确保您下载了 [extension.zip](https://github.com/keleus/BewlyCat/releases)。
+版本跟随上游：基于上游 `vX.Y.Z` 的第 N 个 Safari 版标签为 `vX.Y.Z-safari.N`，扩展内显示为 `X.Y.Z.N`。各版本的 Safari 部分改动见 [CHANGELOG-safari.md](CHANGELOG-safari.md)。
 
-在 Edge 浏览器中打开 `edge://extensions` 或者在 Chrome 浏览器中打开 `chrome://extensions` 界面，只需将下载的 `extension.zip` 文件拖放到浏览器中即可完成安装。
+## 问题反馈
 
-<details>
- <summary> Edge & Chrome 的另一种安装方法 </summary>
+- Safari 版特有的问题：在[本仓库提交 Issue](https://github.com/IgnatAi401/BewlyCat-Safari/issues/new/choose)，附上 Safari 版本、macOS 版本、版本标签或提交号、出问题的网址。
+- 在 Chrome / Edge / Firefox 官方版中也能复现的问题：请反馈到[上游仓库](https://github.com/keleus/BewlyCat/issues)。
 
-#### Edge
+## 许可证与鸣谢
 
-> 确保您下载了 [extension.zip](https://github.com/keleus/BewlyCat/releases) 并解压缩该文件。
-
-1. 在地址栏输入 `edge://extensions/` 并按回车
-2. 打开 `开发者模式` 并点击 `加载已解压的拓展程序` <br/> <img width="655" alt="image" src="https://user-images.githubusercontent.com/33394391/232246901-e3544c16-bde2-480d-b770-ca5242793963.png">
-3. 在浏览器中加载解压后的扩展文件夹
-
-#### Chrome
-
-> 确保您下载了 [extension.zip](https://github.com/keleus/BewlyCat/releases) 并解压缩该文件。
-
-1. 在地址栏输入 `chrome://extensions/` 并按回车
-2. 打开 `开发者模式` 并点击 `加载已解压的拓展程序` <br/> <img width="655" alt="Snipaste_2022-03-27_18-17-04" src="https://user-images.githubusercontent.com/33394391/160276882-13da0484-92c1-47dd-add8-7655c5c2bf1c.png">
-3. 在浏览器中加载解压后的扩展文件夹
-
-</details>
-
-## 🤝 构建项目参考
-
-查看 [CONTRIBUTING.md](docs/CONTRIBUTING-cmn_CN.md)
-
-### BewlyCat&BewlyBewly贡献者
-
-[![Contributors](https://contrib.rocks/image?repo=keleus/BewlyCat)](https://github.com/keleus/BewlyCat/graphs/contributors)
-
-## ❤️ 鸣谢
-
-- [BewlyBewly](https://github.com/BewlyBewly/BewlyBewly) - 该项目的基础
-- [vitesse-webext](https://github.com/antfu/vitesse-webext) - 该项目使用的模板
-- [UserScripts/bilibiliHome](https://github.com/indefined/UserScripts/tree/master/bilibiliHome),
-[bilibili-app-recommend](https://github.com/magicdawn/bilibili-app-recommend) - 获取访问密钥的参考来源
-- [Bilibili-Evolved](https://github.com/the1812/Bilibili-Evolved) - 部分功能实现
-- [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)
+本项目遵循上游的 [LICENSE](LICENSE)（在 MIT 基础上禁止封装为客户端或 App 分发）。感谢 [BewlyCat](https://github.com/keleus/BewlyCat)、[BewlyBewly](https://github.com/BewlyBewly/BewlyBewly) 及其全部贡献者。

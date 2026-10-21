@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill'
 
 import type { AppClientEndpoint, AppClientRequest } from '~/constants/appClient'
 import { APP_CLIENT_REQUEST } from '~/constants/appClient'
+import { adaptSafariRuleUpdate } from '~/safari/declarativeNetRequest'
 import { signAppParams } from '~/utils/appSign'
 import { onMessage } from '~/utils/messaging'
 
@@ -140,7 +141,7 @@ async function syncAppClientHeaderRules() {
     return
 
   try {
-    await browser.declarativeNetRequest.updateSessionRules({
+    await browser.declarativeNetRequest.updateSessionRules(adaptSafariRuleUpdate({
       removeRuleIds: APP_CLIENT_HEADER_RULES.map(rule => rule.id),
       addRules: APP_CLIENT_HEADER_RULES.map(rule => ({
         id: rule.id,
@@ -163,7 +164,7 @@ async function syncAppClientHeaderRules() {
           tabIds: [-1],
         },
       })),
-    })
+    }))
   }
   catch (error) {
     console.error('[BewlyCat] Failed to update the APP client header rules:', error)

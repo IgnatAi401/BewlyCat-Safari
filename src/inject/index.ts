@@ -1,5 +1,6 @@
 // 由于是浏览器环境，所以引入的ts不能使用webextension-polyfill相关api，包含获取本地Storage，获取的是网页的localStorage
 import { isSearchResultApiPath } from '~/constants/searchApi'
+import { SAFARI_COMMENT_SHADOW_STYLE_PATCHES, setupSafariPageMessageBridge } from '~/safari/pageBridge'
 import COMMENT_REPLY_TREE_GUIDES_CSS from '~/styles/commentReplyTree.scss?inline'
 import { BILIBILI_DESKTOP_USER_AGENT, isBilibiliWwwUrl } from '~/utils/bilibiliDesktopNavigation'
 import { isInBilibiliLiveContext } from '~/utils/bilibiliLive'
@@ -696,6 +697,7 @@ else if (shouldInitializePageScript) {
         }
       `,
     },
+    ...(__SAFARI__ ? SAFARI_COMMENT_SHADOW_STYLE_PATCHES : {}),
   }
 
   function ensureCommentShadowStyle(root: ShadowRoot, id: string, css: string) {
@@ -4876,6 +4878,9 @@ else if (shouldInitializePageScript) {
     for (const name of commentElementNames)
       safePatchCommentCustomElement(name, window.customElements.get(name))
   }
+
+  if (__SAFARI__)
+    setupSafariPageMessageBridge()
 
   // 添加消息监听器
   window.addEventListener('message', (event) => {

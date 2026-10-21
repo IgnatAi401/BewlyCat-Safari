@@ -1,0 +1,40 @@
+name: Safari 版问题报告
+description: 只在 Safari 版出现的问题请在此报告。
+labels: [Safari]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本仓库是 BewlyCat 的非官方 Safari 适配版。如果问题在 Chrome / Edge / Firefox 的官方版中也能复现，请反馈到[上游仓库](https://github.com/keleus/BewlyCat/issues)。
+
+  - type: textarea
+    attributes:
+      label: 环境信息
+      value: |
+        - Safari 版本（Safari → 关于 Safari）：
+        - macOS 版本：
+        - BewlyCat Safari 版本标签或提交号（如 v1.8.1-safari.1，或 `git rev-parse --short HEAD` 的输出）：
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: 出问题的网址
+      placeholder: https://www.bilibili.com/video/...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 问题描述与复现步骤
+      description: 写清楚做了什么、期望看到什么、实际看到什么。可以附截图，或 Safari「开发 → 显示网页检查器」中控制台的报错。
+    validations:
+      required: true
+
+  - type: checkboxes
+    attributes:
+      label: 确认
+      options:
+        - label: 已按 README 移除旧的临时扩展并重新构建、重新添加，问题仍然存在
+          required: true

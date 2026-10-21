@@ -1,6 +1,8 @@
 import browser from 'webextension-polyfill'
 
 import { isContentScriptTargetUrl } from '~/constants/contentScript'
+import { adaptSafariRuleUpdate } from '~/safari/declarativeNetRequest'
+import { setupSafariUpdateCheck } from '~/safari/updateCheck/background'
 import { BILIBILI_DESKTOP_USER_AGENT, isBilibiliWwwUrl, isPreventMobileRedirectEnabled } from '~/utils/bilibiliDesktopNavigation'
 
 import { isAppClientRequestUrl, setupAppClient } from './appClient'
@@ -58,10 +60,10 @@ async function syncPreventMobileRedirectRule(enabled: boolean) {
     return
 
   try {
-    await browser.declarativeNetRequest.updateDynamicRules({
+    await browser.declarativeNetRequest.updateDynamicRules(adaptSafariRuleUpdate({
       removeRuleIds: [PREVENT_MOBILE_REDIRECT_RULE_ID],
       addRules: enabled ? [preventMobileRedirectRule] : [],
-    })
+    }))
   }
   catch (error) {
     console.error('[BewlyCat] Failed to update the mobile redirect compatibility rule:', error)
@@ -173,3 +175,6 @@ setupTopBarStateBroker()
 setupWatchLaterStateBroker()
 setupContentScriptRefreshPrompt()
 setupLoginStateWatcher()
+
+if (__SAFARI__)
+  setupSafariUpdateCheck()

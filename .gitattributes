@@ -7,3 +7,4 @@
 # BewlyCat-Safari: keep our own agent docs when merging upstream (needs: git config merge.ours.driver true)
 AGENTS.md merge=ours
 CLAUDE.md merge=ours
+README.md merge=ours
