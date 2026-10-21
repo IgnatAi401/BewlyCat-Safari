@@ -18,16 +18,19 @@ export function setupSafariPageMessageBridge() {
   })
 }
 
-// 评论区用户名与链接跟随主题色。
+// 评论区用户名跟随主题色。不能放进通用样式补丁表：页面脚本对表中组件只注入样式就返回，
+// 会跳过 bili-comment-user-info 自己的性别、楼主标识、IP 属地处理，改在该处理开头注入。
+export const SAFARI_COMMENT_USER_INFO_STYLE_PATCH = {
+  id: 'bewly-comment-user-info-style',
+  css: `
+    #user-name a[style*="color"] {
+      color: var(--bew-theme-color) !important;
+    }
+  `,
+}
+
+// 评论区链接跟随主题色。
 export const SAFARI_COMMENT_SHADOW_STYLE_PATCHES: Record<string, { id: string, css: string }> = {
-  'bili-comment-user-info': {
-    id: 'bewly-comment-user-info-style',
-    css: `
-      #user-name a[style*="color"] {
-        color: var(--bew-theme-color) !important;
-      }
-    `,
-  },
   'bili-rich-text': {
     id: 'bewly-comment-rich-text-style',
     css: `

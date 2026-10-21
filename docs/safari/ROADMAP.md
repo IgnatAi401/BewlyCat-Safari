@@ -1,6 +1,6 @@
 # BewlyCat-Safari 维护路线图
 
-本仓库是 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 的非官方 Safari 适配版，面向自己和其他 Safari 用户。**以源码分发**：每个版本发布 GitHub Release（只含源码，不附构建产物、不做 App），用户下载或拉取源码、在本地构建后作为 Safari 临时扩展加载；扩展内置新版本提示。
+本仓库是 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 的非官方 Safari 适配版，面向自己和其他 Safari 用户。**以构建产物分发**：每个版本发布 GitHub Release 并附上构建好的扩展压缩包（不做 App），用户下载解压后作为 Safari 临时扩展加载，无需安装依赖或编译；构建产物不提交进 Git。扩展内置新版本提示。
 
 ## 1. 仓库与分支
 
@@ -14,7 +14,7 @@
 
 `safari` 分支的最新提交应始终可构建、可用；未测完的改动留在功能分支。
 
-旧仓库 `IgnatAi401/BewlyCat-Safari-Local`（只存构建产物）在本仓库首个版本实测通过后归档，简介注明迁移到本仓库。
+旧仓库 `IgnatAi401/BewlyCat-Safari-Local`（把构建产物提交在仓库里）在本仓库首个 Release 实测通过后归档，简介注明迁移到本仓库。
 
 ## 2. 只用本仓库的 Agent 指导文档
 
@@ -39,17 +39,25 @@
 | `.gitattributes` | 末尾 | `AGENTS.md`、`CLAUDE.md`、`README.md` 使用 `merge=ours` |
 | `README.md` | 全文 | 改写为 Safari 版说明（`merge=ours`，上游 README 改动不合入） |
 | `vite.config.ts` | `replace()` | 定义 `__SAFARI__`（内容脚本、页面脚本） |
+| `vite.config.content.ts` | `css` 选项 | `scopeSafariHostSelectors()`：Safari 把清单注入的 `style.css` 也应用到页面所有 Shadow DOM，将通用 `:host` 限定为 `:host(#bewly)` |
 | `tsup.config.ts` | `define` | 定义 `__SAFARI__`（后台） |
 | `src/global.d.ts` | 顶部 | 声明 `__SAFARI__` |
 | `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：版本号、注入范围、权限、规则集、最低 Safari 18.4 |
 | `src/logic/storage.ts` | `settings` 的 `normalize` 末尾 | `applySafariSettingsFixes()`：关闭抽屉打开方式与通知抽屉 |
 | `src/composables/useDark.ts` | `syncBilibiliTheme()` 末尾 | 主题切换转交页面脚本 |
-| `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`message` 监听之前 | 评论区主题色样式；注册 Safari 消息桥（派发 `global.themeChange`） |
+| `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`bili-comment-user-info` 更新回调开头、`message` 监听之前 | 评论区主题色样式（用户名样式单独注入，不进通用样式表，以免跳过性别/楼主/IP 属地处理）；注册 Safari 消息桥（派发 `global.themeChange`）；`deferSafariHiddenHomepageFeed()`：BewlyCat 首页接管期间暂缓被隐藏的原首页的信息流请求（原首页会连续加载 10 页推荐），切回原版首页时再发出；`updateCommentReplyTree()` 之前新增 `updateCommentReplyTreeAfterRender()`，评论组件增强回调中的 3 处调用改用它：`coalesceSafariCommentReplyTreeUpdate()` 把同一楼层同帧的重复重算合并到下一帧；`updateCommentReplyTree()` 开头 `noteSafariCommentReplyTreeUpdate()` 记录本帧已重算；`observeCommentReplyTreeLayout()` 的 ResizeObserver 回调中，本帧已重算过的楼层不再安排重算（尺寸变化来自重算自身写入的缩进） |
 | `src/background/index.ts` | 末尾；`syncPreventMobileRedirectRule()` 的 `updateDynamicRules` 参数 | `setupSafariUpdateCheck()`；`adaptSafariRuleUpdate()` 改写规则 |
+| `src/background/utils.ts` | `doCachedRequest()` 中 `accountId` 赋值一行 | `getSafariAccountId()`：`cookies` API 读不到 `DedeUserID`，接口缓存改用 nav 接口的账号作为键 |
 | `src/background/appClient.ts` | `syncAppClientHeaderRules()` 的 `updateSessionRules` 参数 | `adaptSafariRuleUpdate()`：Safari 不支持正则 `\|` 和 `sec-ch-ua*` 请求头 |
 | `src/background/loginStateWatcher.ts` | `setupLoginStateWatcher()` 开头 | `setupSafariLoginStateWatcher()`：Safari 的 `cookies.onChanged` 不带 changeInfo，`cookies` API 读不到 B 站 Cookie，改用 nav 接口判断 |
-| `src/contentScripts/index.ts` | `onDOMLoaded()` 末尾 | `mountSafariUpdateBanner()` |
-| `src/components/Settings/About/About.vue` | `about-maintenance` 开头 | 「BewlyCat Safari」设置组（检查更新开关、立即检查） |
+| `src/contentScripts/index.ts` | `onDOMLoaded()` 末尾 | `stopSafariLiveBadgeAnimation()`：动态页「正在直播」角标的逐帧动画停在第一帧（该动画让空闲 CPU 多占约 14 个百分点）；`hideSafariPageScrollbar()`：隐藏播放页等页面的文档滚动条，避免「始终显示滚动条」时把界面往左挤；`mountSafariUpdateBanner()` |
+| `src/components/Settings/About/About.vue` | `about-maintenance` 开头；`checkGitHubRelease()` 开头；「浏览器云同步」「版本提醒」设置组与链接/贡献者卡片的 `v-if`；版本号链接 `href` | 「BewlyCat Safari」设置组（检查更新开关、立即检查）；不检查上游 Release（不显示 NEW 标记）；隐藏上游「新版本提醒」开关、依赖 Chrome 账号的「浏览器云同步」、上游 GitHub/作者主页/贡献者链接；版本号改链到本仓库 Releases |
+| `src/components/Settings/searchCatalog.ts` | 「关于」条目列表 | 设置搜索中不出现已隐藏的「浏览器云同步」「版本提醒」 |
+| `src/contentScripts/views/Home/components/VersionReminder.vue` | `shouldShowReminder` 开头 | 隐藏上游首页「新版本说明」按钮，只保留 Safari 版自己的更新提示 |
+| `src/components/Picture.vue`、`src/components/LazyPicture.vue` | 模板中的 `<source>` 与 `<img :src>`；`LazyPicture` 的 `imageSrc` 与 `isCurrentImage()` 的 `src` 比较 | `getSafariPictureImageSrc()`：不渲染 `<source>`，`<img>` 直接加载 AVIF。WebKit 增删 `src`/`srcset` 时立即重新选源，原写法同一张图会请求 3～4 次 |
+| `src/contentScripts/features/scrollBridge.ts` | `handleViewportScroll()` 中同步 `window.scrollTo` 之前 | 首页滚动时不再每帧把位置同步到文档，停止滚动后同步一次（每帧同步占滚动时主线程约 12%） |
+| `src/contentScripts/views/App.vue` | `scrollViewportRef` 的 `watch` 回调开头 | `hideSafariScrollViewportScrollbar()`：主界面滚动容器的 `scrollbar-gutter: stable` 在 Safari「始终显示滚动条」时一直占位、把界面往左挤，隐藏滚动条并取消预留宽度 |
+| `src/components/SearchBar/SearchBar.vue` | 模板根元素 `#search-wrap` 的 `@mousedown` | `keepSafariSearchInputFocus()`：Safari 点击链接/按钮不获得焦点，按下鼠标时输入框失焦、下拉框收起，搜索记录、热搜、联想词和清空按钮点击无效；在这些区域按下时保持输入框焦点 |
 
 各接入点同时有对应的 `import` 行；对应实现均在 `src/safari/`。
 
@@ -57,8 +65,15 @@
 
 - 版本跟随上游：同步上游 `vX.Y.Z` 后发布 `vX.Y.Z-safari.1`；上游不变、只修 Safari 问题时序号加 1（`-safari.2`…）。Release 标题写作 `vX.Y.Z（Safari 第 N 版）`。
 - 扩展版本号：`package.json` 的 `version` 保持上游原值（改它会在每次同步时冲突）。Safari 修订号单独放在 `src/safari/version.ts`（如 `SAFARI_REVISION = 1`），由 `src/manifest.ts` 在 Safari 构建时拼成 `manifest.version = "X.Y.Z.N"`。
-- 每个 Release 只含 GitHub 自动附带的源码包，说明里写：基于的上游版本及上游更新要点链接、Safari 部分的新增与修复、已知问题、升级步骤。同样内容记入 `CHANGELOG-safari.md`。
-- 发布：实测通过后 `git tag vX.Y.Z-safari.N && git push origin safari --tags`，再用 `gh release create vX.Y.Z-safari.N --notes-file <说明文件>` 或在网页上创建 Release。只有正式 Release 会触发用户的更新提示，草稿和预发布（pre-release）不会。
+- 每个 Release 附一个构建压缩包 `BewlyCat-Safari-vX.Y.Z-safari.N.zip`：压缩包根目录直接是 `manifest.json`（macOS 解压后得到同名文件夹，用户直接选它）。`extension-safari/` 和 `*.zip` 已在 `.gitignore` 中，不提交。
+- Release 说明里写：基于的上游版本及上游更新要点链接、Safari 部分的新增与修复、已知问题、升级步骤。同样内容记入 `CHANGELOG-safari.md`。
+- 发布：在要打标签的提交上重新构建并实测，然后：
+  1. `pnpm build-safari`
+  2. `(cd extension-safari && zip -r -X ../BewlyCat-Safari-vX.Y.Z-safari.N.zip . -x '*.DS_Store')`
+  3. `git tag vX.Y.Z-safari.N && git push origin safari --tags`
+  4. `gh release create vX.Y.Z-safari.N BewlyCat-Safari-vX.Y.Z-safari.N.zip --title 'vX.Y.Z（Safari 第 N 版）' --notes-file <说明文件>`
+
+  只有正式 Release 会触发用户的更新提示，草稿和预发布（pre-release）不会。
 
 ## 4.1 新版本提示（扩展内）
 
@@ -90,28 +105,40 @@
 - [ ] 设置页：抽屉相关选项已强制关闭
 - [ ] 新版本提示：把本地版本号临时调低，确认提示条出现、链接正确、「忽略此版本」生效
 
+### 6.1 性能测试
+
+改动可能影响性能时（图片加载、滚动、观察器、全局样式等），用 `scripts/safari/perf.mjs` 在 safaridriver 自动化窗口中对比改动前后。它按场景（首页、视频页、搜索、个人空间、热门）采集加载时间、空闲与滚动时标签页进程的 CPU、帧率与卡顿帧、主线程长任务、DOM 规模、滚动时请求数和内存，结果写入输出目录的 `summary.md`。
+
+1. 首次使用：Safari 设置 → 开发者 → 勾选「允许远程自动化」。
+2. `pnpm build-safari`，然后 `node scripts/safari/perf.mjs --install`：重启自动化 Safari 并安装 `extension-safari/`。在弹出的自动化窗口中点一下页面 →「停止会话」→ 点工具栏带 ⚠️ 的 BewlyCat 图标 →「始终允许」，不要退出 Safari。
+3. `node scripts/safari/perf.mjs --variants ext --runs 3`：多轮取中位数；`--scenarios home,video` 只测部分场景。
+4. 需要不装扩展的对照组时：`node scripts/safari/perf.mjs --variants base --restart-safari --runs 3`（会退出自动化 Safari，之后要重新执行第 2 步）。
+5. 定位热点：加 `--sample` 用 macOS `sample` 采集空闲和滚动阶段的调用栈，再用 `node scripts/safari/summarize-sample.mjs <输出目录>/*.sample.txt` 汇总时间去向（JS、样式、布局、合成等）和最耗时的 DOM 接口调用。采样会拖慢页面，帧率等指标以不加 `--sample` 的结果为准。
+
+登录态测试：自动化 Safari 的 Cookie 只在单个会话内有效。先单独运行 `safaridriver -p 4444`，再用 `node scripts/safari/perf.mjs --variants ext --login --keep-session --scenarios video,moments,history` 打开扫码登录页，用手机 B 站 App 扫码（不要点击窗口，否则会话停止），登录后各场景在同一会话中运行；结束时打印会话 ID，之后用 `--session <ID>` 复用。同一会话中进程内存会累积，内存列不可比。
+
+注意：自动化 Safari 是独立的临时实例，没有登录态，新装的扩展只在该实例退出前有效；自动化实例保留的扩展副本读取的是安装时的文件，重新构建后必须重新执行第 2 步。
+
 ## 7. 用户如何使用与更新
 
 写进 README 的用户步骤：
 
+README 保持简短（参照旧仓库 `BewlyCat-Safari-Local` 的写法），只写：
+
 **首次安装**
 
-1. 安装 Node.js（版本见 `package.json` 的 `engines`）和 pnpm。
-2. `git clone https://github.com/IgnatAi401/BewlyCat-Safari.git`，进入目录。
-3. `pnpm install --frozen-lockfile`，然后 `pnpm build-safari`。
-4. Safari → 设置 → 高级 → 勾选「显示网页开发者功能」；开发 → 开发者设置 → 「添加临时扩展」，选择 `extension-safari/` 文件夹。
-5. 首次在 B 站页面授权扩展访问网站。
+1. 在 Release 页下载 `BewlyCat-Safari-<版本>.zip`（不是 Source code）并解压。
+2. Safari → 设置 → 高级 → 勾选「显示网页开发者功能」；设置 → 开发者 → 勾选「允许未签名的扩展」→「添加临时扩展…」，选择解压后包含 `manifest.json` 的文件夹。
+3. 在设置 → 扩展中启用，并允许访问 `bilibili.com` 和 `hdslb.com`。
 
 **接收更新**
 
-- 扩展会在 B 站页面提示新版本；也可以在 GitHub 仓库点 Watch → Custom → Releases 接收邮件通知。
-- 用 Git 更新：`git pull`（或 `git checkout <新标签>`），`pnpm install --frozen-lockfile`，`pnpm build-safari`，在 Safari 中移除旧临时扩展后重新添加。
-- 不用 Git：在 Release 页下载「Source code (zip)」，解压后执行同样的构建与重新添加步骤。
+- 扩展会在 B 站页面提示新版本；下载新压缩包，在 Safari 中移除旧临时扩展后重新添加。
 
-**需要在 README 说明的限制**
+**限制**
 
-- 临时扩展在 Safari 退出后通常会被移除，需要重新添加（不必重新构建）。
-- 多语言路径（如 `/ja/video/...`）不在注入范围内；iframe 内页面保持 B 站原样式。
+- 临时扩展在 Safari 退出后通常会被移除，需要重新添加。
+- 其余已知问题（iframe 内保持原样式、抽屉打开方式不可用等）写在 `CHANGELOG-safari.md`，不进 README。
 
 ## 8. 许可证、署名与沟通
 
@@ -129,5 +156,5 @@
 - [x] 将 Safari 逻辑重构到 `src/safari/`，更新接入点清单
 - [x] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
 - [x] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
-- [ ] 发布 Release `v1.8.1-safari.1`，实测通过后归档 `BewlyCat-Safari-Local`
+- [ ] 发布 Release `v1.8.1-safari.1`（附构建压缩包），实测通过后归档 `BewlyCat-Safari-Local`
 - [ ] 同步上游最新版本（当前上游 `main` 已领先 `v1.8.1`）

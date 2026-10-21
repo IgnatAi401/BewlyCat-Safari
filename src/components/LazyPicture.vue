@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { BewlyAppProvider } from '~/composables/useAppProvider'
 import { settings } from '~/logic'
+import { getSafariPictureImageSrc, SAFARI_SINGLE_SOURCE_PICTURE } from '~/safari/picture'
 import type {
   ImageLoadQueueCancelReason,
   ImageLoadQueueHandle,
@@ -315,6 +316,8 @@ const imageElRef = ref<HTMLImageElement | null>(null)
 const isImageMounted = ref(props.loading === 'eager')
 const isLoaded = ref(false)
 const actualSrc = ref(props.loading === 'eager' ? props.src : '')
+// <img> 实际加载的地址；Safari 版直接加载 AVIF，见 src/safari/picture.ts。
+const imageSrc = computed(() => getSafariPictureImageSrc(actualSrc.value))
 const skipRevealTransition = ref(false)
 
 type ImageLoadState = 'idle' | 'queued' | 'loading' | 'loaded' | 'failed'
@@ -519,7 +522,7 @@ function isCurrentImage(image: HTMLImageElement, generation: number): boolean {
     && generation === loadGeneration
     && generation === activeImageGeneration
     && image === imageElRef.value
-    && image.getAttribute('src') === actualSrc.value
+    && image.getAttribute('src') === imageSrc.value
 }
 
 async function processImageLoad(image: HTMLImageElement, generation: number) {
@@ -848,11 +851,13 @@ watch(
          image becomes opaque, producing a separate brightness flash. -->
     <!-- Queue entries do not mount this branch, so they do not own a src. -->
     <template v-if="isImageMounted && actualSrc">
-      <source :srcset="`${actualSrc}.avif`" type="image/avif">
-      <source :srcset="`${actualSrc}.webp`" type="image/webp">
+      <template v-if="!SAFARI_SINGLE_SOURCE_PICTURE">
+        <source :srcset="`${actualSrc}.avif`" type="image/avif">
+        <source :srcset="`${actualSrc}.webp`" type="image/webp">
+      </template>
       <img
         :ref="bindImageEl"
-        :src="actualSrc"
+        :src="imageSrc"
         :alt="alt"
         loading="eager"
         decoding="async"

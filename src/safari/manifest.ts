@@ -5,8 +5,10 @@ import { CONTENT_SCRIPT_EXCLUDE_MATCHES } from '../constants/contentScript'
 import { getSafariExtensionVersion } from './version'
 
 // 只注入 BewlyCat 实际接管的页面，且不注入 iframe（抽屉打开方式因此不可用）。
-const SAFARI_CONTENT_SCRIPT_MATCHES = [
+const SAFARI_MAIN_SITE_PATH_MATCHES = [
   '*://www.bilibili.com/',
+  // 带参数的首页（如 /?spm_id_from=...）：匹配模式的路径部分包含查询参数。
+  '*://www.bilibili.com/?*',
   '*://www.bilibili.com/index.html*',
   '*://www.bilibili.com/video/*',
   '*://www.bilibili.com/list/*',
@@ -27,6 +29,24 @@ const SAFARI_CONTENT_SCRIPT_MATCHES = [
   '*://www.bilibili.com/account/history*',
   '*://www.bilibili.com/read/*',
   '*://www.bilibili.com/404*',
+]
+
+// 主站多语言页面在路径前加语言段（如 /ja/video/...），与 src/utils/bilibiliLocale.ts 的列表保持一致。
+const BILIBILI_LOCALE_PATH_SEGMENTS = ['en', 'th', 'vi', 'id', 'ja', 'zh-hant', 'zh-hans', 'ar', 'pt', 'es', 'tr', 'ru', 'ms']
+
+const MAIN_SITE_ORIGIN_MATCH = '*://www.bilibili.com'
+
+function withLocalePaths(matches: string[]) {
+  return matches.flatMap(match => [
+    match,
+    ...BILIBILI_LOCALE_PATH_SEGMENTS.map(locale => `${MAIN_SITE_ORIGIN_MATCH}/${locale}${match.slice(MAIN_SITE_ORIGIN_MATCH.length)}`),
+  ])
+}
+
+const SAFARI_CONTENT_SCRIPT_MATCHES = [
+  ...withLocalePaths(SAFARI_MAIN_SITE_PATH_MATCHES),
+  // 多语言首页的 /ja（不带结尾斜杠）。
+  ...BILIBILI_LOCALE_PATH_SEGMENTS.map(locale => `${MAIN_SITE_ORIGIN_MATCH}/${locale}`),
   '*://search.bilibili.com/*',
   '*://t.bilibili.com/*',
   '*://space.bilibili.com/*',

@@ -11,7 +11,6 @@
 
 - 开发在 `safari` 分支（默认分支）；`main` 只镜像上游，不在其上提交。
 - `safari` 已公开、有其他用户在拉取：同步上游用 `git merge`，**禁止 rebase、改写历史和强制推送**。
-- 提交使用 Conventional Commits，冒号后用中文（如 `fix: 修复 Safari 下主题切换`）；同步上游用 `merge: 同步上游 vX.Y.Z`。
 - 提交、推送、合并上游须用户明确授权；不丢弃或混入用户现有修改。
 - 不向上游提交本仓库专属文件（`AGENTS.md`、`CLAUDE.md`、`docs/safari/`、`src/safari/`）。
 
@@ -25,8 +24,7 @@
 ## 检查与验证
 
 - 静态检查：`pnpm exec eslint <相关文件>`、`pnpm typecheck`；改动 Safari 构建相关内容时运行 `pnpm build-safari`，产物在 `extension-safari/`。
-- 本仓库以源码 Release 分发，不发布构建产物，`extension-safari/` 不提交；版本号与 Release 规则见路线图第 4 节。
-- 只在用户要求时做浏览器实测；实测在真实 Safari 中加载 `extension-safari/` 进行，不用模拟页面代替。
+- 每个 Release 附上 `extension-safari/` 打包的构建压缩包，用户下载后直接加载；`extension-safari/` 和压缩包不提交进 Git。版本号、打包与 Release 规则见路线图第 4 节。
 - 结束时说明改动、实际运行的检查及结果、未解决事项。
 
 ## 许可证

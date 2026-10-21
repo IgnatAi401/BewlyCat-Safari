@@ -5,6 +5,7 @@
 import type Browser from 'webextension-polyfill'
 import browser from 'webextension-polyfill'
 
+import { getSafariAccountId } from '~/safari/account'
 import { waitWithSignal } from '~/utils/abort'
 
 import { createApiResponseCache } from './apiResponseCache'
@@ -134,7 +135,7 @@ async function doCachedRequest(message: Message, api: API, tab?: Browser.Tabs.Ta
       const accountCookie = cookies
         ? cookies.find(cookie => cookie.name === 'DedeUserID')
         : await browser.cookies.get({ url: api.url, name: 'DedeUserID' })
-      accountId = accountCookie?.value ?? ''
+      accountId = __SAFARI__ ? await getSafariAccountId() : (accountCookie?.value ?? '')
     }
     catch {
       // 无法确认账号时直接请求，避免误用其他账号的推荐。

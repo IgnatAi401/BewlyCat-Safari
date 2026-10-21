@@ -19,6 +19,7 @@ import { installScrollBridge } from '~/contentScripts/features/scrollBridge'
 import { HomeSubPage } from '~/contentScripts/views/Home/types'
 import { AppPage } from '~/enums/appEnums'
 import { settings, settingsReady } from '~/logic'
+import { hideSafariScrollViewportScrollbar } from '~/safari/scrollViewport'
 import type { DockItem } from '~/stores/mainStore'
 import { useMainStore } from '~/stores/mainStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -994,6 +995,8 @@ useEventListener(window, 'scroll', scheduleLayoutEditTargetsRefresh, { passive: 
 onUnmounted(stopLayoutEditTargetObserver)
 const scrollViewportRef = ref<HTMLElement | null>(null)
 watch(scrollViewportRef, (viewport, _previousViewport, onCleanup) => {
+  if (__SAFARI__ && viewport)
+    hideSafariScrollViewportScrollbar(viewport)
   if (viewport && isHomePage() && !settings.value.useOriginalBilibiliHomepage)
     onCleanup(installScrollBridge(viewport))
 }, { flush: 'post' })

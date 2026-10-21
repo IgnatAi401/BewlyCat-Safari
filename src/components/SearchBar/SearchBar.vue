@@ -8,6 +8,7 @@ import type { BewlyAppProvider } from '~/composables/useAppProvider'
 import { resolveSearchBarCharacterUrl } from '~/constants/imgs'
 import { AppPage } from '~/enums/appEnums'
 import { settings } from '~/logic'
+import { keepSafariSearchInputFocus } from '~/safari/searchBarFocus'
 import api from '~/utils/api'
 import { findLeafActiveElement } from '~/utils/element'
 import { isHomePage } from '~/utils/main'
@@ -600,6 +601,7 @@ function handleClearKeyword() {
     w="full"
     max-w="550px"
     pos="relative"
+    @mousedown="keepSafariSearchInputFocus"
     @focusout="handleFocusOut"
   >
     <div

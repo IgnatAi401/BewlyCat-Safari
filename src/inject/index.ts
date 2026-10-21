@@ -1,6 +1,8 @@
 // 由于是浏览器环境，所以引入的ts不能使用webextension-polyfill相关api，包含获取本地Storage，获取的是网页的localStorage
 import { isSearchResultApiPath } from '~/constants/searchApi'
-import { SAFARI_COMMENT_SHADOW_STYLE_PATCHES, setupSafariPageMessageBridge } from '~/safari/pageBridge'
+import { coalesceSafariCommentReplyTreeUpdate, isSafariCommentReplyTreeUpdatedThisFrame, noteSafariCommentReplyTreeUpdate } from '~/safari/commentReplyTree'
+import { deferSafariHiddenHomepageFeed } from '~/safari/hiddenHomepageFeed'
+import { SAFARI_COMMENT_SHADOW_STYLE_PATCHES, SAFARI_COMMENT_USER_INFO_STYLE_PATCH, setupSafariPageMessageBridge } from '~/safari/pageBridge'
 import COMMENT_REPLY_TREE_GUIDES_CSS from '~/styles/commentReplyTree.scss?inline'
 import { BILIBILI_DESKTOP_USER_AGENT, isBilibiliWwwUrl } from '~/utils/bilibiliDesktopNavigation'
 import { isInBilibiliLiveContext } from '~/utils/bilibiliLive'
@@ -2720,6 +2722,9 @@ else if (shouldInitializePageScript) {
           disconnectCommentReplyTreeResizeObserver(state)
           return
         }
+        // Safari：本帧刚重算过的尺寸变化来自重算自身写入的缩进，结果已是最新，不再重算（见 src/safari/commentReplyTree.ts）。
+        if (__SAFARI__ && isSafariCommentReplyTreeUpdatedThisFrame(component))
+          return
         scheduleCommentReplyTreeLayoutUpdate(component)
       })
       targetList.forEach(target => state.resizeObserver?.observe(target))
@@ -4257,7 +4262,16 @@ else if (shouldInitializePageScript) {
     return orderedNodes
   }
 
+  // 评论组件增强时调用：Safari 中同一楼层同帧的重复重算合并到下一帧（见 src/safari/commentReplyTree.ts）。
+  function updateCommentReplyTreeAfterRender(component: any) {
+    if (__SAFARI__ && component && coalesceSafariCommentReplyTreeUpdate(component, () => updateCommentReplyTree(component)))
+      return
+    updateCommentReplyTree(component)
+  }
+
   function updateCommentReplyTree(component: any) {
+    if (__SAFARI__ && component)
+      noteSafariCommentReplyTreeUpdate(component)
     const root = component?.shadowRoot as ShadowRoot | null | undefined
     if (!root)
       return
@@ -4729,13 +4743,13 @@ else if (shouldInitializePageScript) {
               // 内的 SVG 线条会随渲染结果一并被移除；重绘完成后从当前回复容器恢复。
               const repliesRenderer = root.querySelector('bili-comment-replies-renderer') as HTMLElement | null
               if (repliesRenderer) {
-                updateCommentReplyTree(repliesRenderer)
+                updateCommentReplyTreeAfterRender(repliesRenderer)
                 if (getCommentReplyDeepLinkId())
                   scheduleCommentReplyDeepLinkSettlement('hash')
               }
             }
             else if (name === 'bili-comment-replies-renderer') {
-              updateCommentReplyTree(component)
+              updateCommentReplyTreeAfterRender(component)
               // 深链目标楼中楼刚挂载/更新时再结算一次
               if (getCommentReplyDeepLinkId())
                 scheduleCommentReplyDeepLinkSettlement('hash')
@@ -4747,7 +4761,7 @@ else if (shouldInitializePageScript) {
               const rootNode = component.getRootNode?.()
               const repliesRenderer = rootNode instanceof ShadowRoot ? rootNode.host : null
               if (repliesRenderer?.localName === 'bili-comment-replies-renderer') {
-                updateCommentReplyTree(repliesRenderer)
+                updateCommentReplyTreeAfterRender(repliesRenderer)
                 if (getCommentReplyDeepLinkId())
                   scheduleCommentReplyDeepLinkSettlement('hash')
               }
@@ -4802,6 +4816,9 @@ else if (shouldInitializePageScript) {
             const root = component.shadowRoot
             if (!root)
               return
+
+            if (__SAFARI__)
+              ensureCommentShadowStyle(root, SAFARI_COMMENT_USER_INFO_STYLE_PATCH.id, SAFARI_COMMENT_USER_INFO_STYLE_PATCH.css)
 
             // 找到用户名元素
             const userNameEl = root.querySelector('#user-name')
@@ -4879,8 +4896,10 @@ else if (shouldInitializePageScript) {
       safePatchCommentCustomElement(name, window.customElements.get(name))
   }
 
-  if (__SAFARI__)
+  if (__SAFARI__) {
     setupSafariPageMessageBridge()
+    deferSafariHiddenHomepageFeed()
+  }
 
   // 添加消息监听器
   window.addEventListener('message', (event) => {

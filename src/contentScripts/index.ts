@@ -8,6 +8,8 @@ import { CONTENT_SCRIPT_COMMIT, CONTENT_SCRIPT_PING, CONTENT_SCRIPT_PONG } from 
 import { BEWLY_IFRAME_DRAWER_HOST_CLASS, BEWLY_MOUNTED, IFRAME_DARK_MODE_CHANGE, IFRAME_TOP_BAR_CHANGE } from '~/constants/globalEvents'
 import { localSettings, settings, settingsReady } from '~/logic'
 import { setupApp } from '~/logic/common-setup'
+import { stopSafariLiveBadgeAnimation } from '~/safari/liveBadgeAnimation'
+import { hideSafariPageScrollbar } from '~/safari/scrollViewport'
 import { mountSafariUpdateBanner } from '~/safari/updateCheck/banner'
 import { useTopBarStore } from '~/stores/topBarStore'
 import RESET_BEWLY_CSS from '~/styles/reset.css?raw'
@@ -1458,8 +1460,11 @@ else if (shouldInitializeContentScript) {
     // 原生空间订阅合集 favlist「播放全部」按设置起播
     initNativeFavoriteSeasonPlayAllIntercept()
 
-    if (__SAFARI__)
+    if (__SAFARI__) {
+      stopSafariLiveBadgeAnimation()
+      hideSafariPageScrollbar()
       void mountSafariUpdateBanner()
+    }
   }
 
   function initializePage() {

@@ -61,6 +61,13 @@ export function installScrollBridge(viewport: HTMLElement): () => void {
     if (scrollDriver === 'document')
       return
 
+    // Safari：每帧同步 window.scrollTo 占滚动时主线程约 12%，并让页面每帧触发 document 滚动事件；
+    // #bewly 为 fixed，文档滚动位置不影响显示，改为停止滚动后由 keepScrollDriver 的定时器同步一次。
+    if (__SAFARI__) {
+      keepScrollDriver('viewport')
+      return
+    }
+
     keepScrollDriver('viewport')
     mirroredDocumentTop = top
     window.scrollTo({ top, behavior: 'instant' })

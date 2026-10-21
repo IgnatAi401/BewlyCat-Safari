@@ -36,5 +36,5 @@ body:
     attributes:
       label: 确认
       options:
-        - label: 已按 README 移除旧的临时扩展并重新构建、重新添加，问题仍然存在
+        - label: 已按 README 移除旧的临时扩展并重新添加最新版本，问题仍然存在
           required: true

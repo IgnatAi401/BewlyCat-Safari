@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getSafariPictureImageSrc, SAFARI_SINGLE_SOURCE_PICTURE } from '~/safari/picture'
+
 withDefaults(defineProps<{
   src: string
   loading?: 'lazy' | 'eager'
@@ -16,10 +18,12 @@ withDefaults(defineProps<{
     bg="$bew-skeleton"
     :style="{ aspectRatio, display: 'block' }"
   >
-    <source :srcset="`${src}.avif`" type="image/avif">
-    <source :srcset="`${src}.webp`" type="image/webp">
+    <template v-if="!SAFARI_SINGLE_SOURCE_PICTURE">
+      <source :srcset="`${src}.avif`" type="image/avif">
+      <source :srcset="`${src}.webp`" type="image/webp">
+    </template>
     <img
-      :src="src"
+      :src="getSafariPictureImageSrc(src)"
       :loading="loading || 'lazy'"
       :alt="alt"
       decoding="async"

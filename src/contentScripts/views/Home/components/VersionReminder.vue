@@ -12,8 +12,10 @@ const BILIBILI_DYNAMIC_URL = 'https://space.bilibili.com/32487218/dynamic'
 
 const dialogVisible = ref(false)
 
+// Safari 版只用自己的更新提示（src/safari/updateCheck/）。
 const shouldShowReminder = computed(() =>
-  settings.value.enableVersionReminder
+  !__SAFARI__
+  && settings.value.enableVersionReminder
   && settings.value.lastAcknowledgedVersion !== version,
 )
 

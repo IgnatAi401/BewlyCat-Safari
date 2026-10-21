@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 
 import packageJson from './package.json'
 import { isDev, isFirefox, isSafari, r } from './scripts/utils'
+import { scopeSafariHostSelectors } from './src/safari/scopeHostSelectors'
 import { sharedConfig } from './vite.config'
 
 const BUNDLED_STYLE_GLOBAL = '__BEWLYCAT_BUNDLED_STYLE_TEXT__'
@@ -46,6 +47,7 @@ export default defineConfig({
     ...sharedConfig.plugins!,
     embedContentScriptStyles(),
   ],
+  css: isSafari ? { postcss: { plugins: [scopeSafariHostSelectors()] } } : undefined,
   build: {
     watch: isDev
       ? { include: ['./**/*'] }

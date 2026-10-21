@@ -8,6 +8,7 @@ import Dialog from '~/components/Dialog.vue'
 import Radio from '~/components/Radio.vue'
 import { useSettingsCloudSyncPreference } from '~/composables/useSettingsCloudSyncPreference'
 import { settings } from '~/logic'
+import { SAFARI_RELEASES_URL } from '~/safari/updateCheck/shared'
 import SafariUpdateCheckSettings from '~/safari/updateCheck/UpdateCheckSettings.vue'
 import { getBrowserInfo, parseBrowserInfo } from '~/utils/browserInfo'
 import { sendMessage } from '~/utils/messaging'
@@ -41,6 +42,7 @@ const { t } = useI18n()
 const toast = useToast()
 
 const isDev = computed((): boolean => import.meta.env.DEV)
+const isSafariBuild = __SAFARI__
 
 onMounted(async () => {
   checkGitHubRelease()
@@ -143,6 +145,10 @@ function handleSyncDialogClose() {
 }
 
 async function checkGitHubRelease() {
+  // Safari 版不检查上游 Release，更新提示见 src/safari/updateCheck/。
+  if (__SAFARI__)
+    return
+
   const apiUrl = `https://api.github.com/repos/keleus/BewlyCat/releases/latest`
 
   try {
@@ -228,7 +234,7 @@ async function handleCopyEnvironmentInfo() {
         </p>
         <p text-center>
           <a
-            href="https://github.com/keleus/BewlyCat/releases" target="_blank"
+            :href="isSafariBuild ? SAFARI_RELEASES_URL : 'https://github.com/keleus/BewlyCat/releases'" target="_blank"
             un-text="sm color-$bew-text-2 hover:color-$bew-text-3"
           >
             v{{ version }}
@@ -258,7 +264,7 @@ async function handleCopyEnvironmentInfo() {
           </SettingsItem>
         </SettingsItemGroup>
 
-        <SettingsItemGroup :title="$t('settings.group_settings_sync')">
+        <SettingsItemGroup v-if="!isSafariBuild" :title="$t('settings.group_settings_sync')">
           <SettingsItem
             :title="$t('settings.enable_settings_sync')"
             :desc="$t('settings.enable_settings_sync_desc')"
@@ -273,7 +279,7 @@ async function handleCopyEnvironmentInfo() {
           </SettingsItem>
         </SettingsItemGroup>
 
-        <SettingsItemGroup :title="$t('settings.group_version_reminder')">
+        <SettingsItemGroup v-if="!isSafariBuild" :title="$t('settings.group_version_reminder')">
           <SettingsItem
             :title="$t('settings.enable_version_reminder')"
             :desc="$t('settings.enable_version_reminder_desc')"
@@ -293,6 +299,7 @@ async function handleCopyEnvironmentInfo() {
       </section>
 
       <section
+        v-if="!isSafariBuild"
         class="about-info-card"
       >
         <section w-full>

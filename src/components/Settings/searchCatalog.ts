@@ -707,10 +707,15 @@ export const settingsSearchEntries: SettingsSearchEntry[] = [
 
   ...createEntries(aboutRoute, [
     'settings.menu_about',
-    'settings.group_settings_sync',
-    'settings.enable_settings_sync',
-    'settings.group_version_reminder',
-    'settings.enable_version_reminder',
+    // Safari 版隐藏浏览器云同步与上游版本提醒，搜索结果同步隐藏。
+    ...(__SAFARI__
+      ? []
+      : [
+          'settings.group_settings_sync',
+          'settings.enable_settings_sync',
+          'settings.group_version_reminder',
+          'settings.enable_version_reminder',
+        ]),
     'settings.maintenance.title',
     'settings.maintenance.backup_title',
     'settings.import_settings',

@@ -106,7 +106,7 @@ export function getSafariUpdateCopy(locale: string): SafariUpdateCopy {
   if (normalized === 'cmn-tw' || normalized === 'jyut' || normalized.startsWith('zh-tw') || normalized.startsWith('zh-hk')) {
     return {
       title: 'BewlyCat Safari 版有新版本 v{version}',
-      description: '臨時擴充功能無法自動更新，請依更新說明重新建置並重新加入。',
+      description: '臨時擴充功能無法自動更新，請下載新版本壓縮檔並重新加入。',
       view: '查看更新',
       ignore: '忽略此版本',
       later: '稍後提醒',
@@ -123,7 +123,7 @@ export function getSafariUpdateCopy(locale: string): SafariUpdateCopy {
   if (normalized === 'cmn-cn' || normalized.startsWith('zh')) {
     return {
       title: 'BewlyCat Safari 版有新版本 v{version}',
-      description: '临时扩展无法自动更新，请按更新说明重新构建并重新添加。',
+      description: '临时扩展无法自动更新，请下载新版本压缩包并重新添加。',
       view: '查看更新',
       ignore: '忽略此版本',
       later: '稍后提醒',
@@ -139,7 +139,7 @@ export function getSafariUpdateCopy(locale: string): SafariUpdateCopy {
   }
   return {
     title: 'BewlyCat for Safari v{version} is available',
-    description: 'Temporary extensions cannot update themselves. Rebuild and re-add the extension following the release notes.',
+    description: 'Temporary extensions cannot update themselves. Download the new zip from the release and re-add the extension.',
     view: 'View update',
     ignore: 'Skip this version',
     later: 'Remind me later',
