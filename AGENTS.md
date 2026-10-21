@@ -25,7 +25,7 @@
 ## 检查与验证
 
 - 静态检查：`pnpm exec eslint <相关文件>`、`pnpm typecheck`；改动 Safari 构建相关内容时运行 `pnpm build-safari`，产物在 `extension-safari/`。
-- 本仓库不发布构建产物，`extension-safari/` 不提交。
+- 本仓库以源码 Release 分发，不发布构建产物，`extension-safari/` 不提交；版本号与 Release 规则见路线图第 4 节。
 - 只在用户要求时做浏览器实测；实测在真实 Safari 中加载 `extension-safari/` 进行，不用模拟页面代替。
 - 结束时说明改动、实际运行的检查及结果、未解决事项。
 

@@ -1,6 +1,6 @@
 # BewlyCat-Safari 维护路线图
 
-本仓库是 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 的非官方 Safari 适配版，面向自己和其他 Safari 用户。**只以源码分发**：不发布构建产物、不打包 zip、不做 App。用户克隆源码、在本地构建后作为 Safari 临时扩展加载。
+本仓库是 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 的非官方 Safari 适配版，面向自己和其他 Safari 用户。**以源码分发**：每个版本发布 GitHub Release（只含源码，不附构建产物、不做 App），用户下载或拉取源码、在本地构建后作为 Safari 临时扩展加载；扩展内置新版本提示。
 
 ## 1. 仓库与分支
 
@@ -46,10 +46,22 @@
 
 （后 6 项待从旧仓库 `patches/safari.patch` 迁入后核对。）
 
-## 4. 版本标记
+## 4. 版本号与 Release
 
-- 不发布 Release。每次同步上游或完成一批修复并实测后，打一个标签标记稳定点：`v<上游版本>-safari.<序号>`，如 `v1.8.1-safari.1`；上游不变只修 Safari 问题时序号加 1，同步新上游后从 1 重新开始。
-- `CHANGELOG-safari.md` 按标签记录：基于的上游版本、Safari 部分的新增与修复、已知问题。用户通过它了解每次更新的内容。
+- 版本跟随上游：同步上游 `vX.Y.Z` 后发布 `vX.Y.Z-safari.1`；上游不变、只修 Safari 问题时序号加 1（`-safari.2`…）。Release 标题写作 `vX.Y.Z（Safari 第 N 版）`。
+- 扩展版本号：`package.json` 的 `version` 保持上游原值（改它会在每次同步时冲突）。Safari 修订号单独放在 `src/safari/version.ts`（如 `SAFARI_REVISION = 1`），由 `src/manifest.ts` 在 Safari 构建时拼成 `manifest.version = "X.Y.Z.N"`。
+- 每个 Release 只含 GitHub 自动附带的源码包，说明里写：基于的上游版本及上游更新要点链接、Safari 部分的新增与修复、已知问题、升级步骤。同样内容记入 `CHANGELOG-safari.md`。
+- 发布：实测通过后 `git tag vX.Y.Z-safari.N && git push origin safari --tags`，再用 `gh release create vX.Y.Z-safari.N --notes-file <说明文件>` 或在网页上创建 Release。只有正式 Release 会触发用户的更新提示，草稿和预发布（pre-release）不会。
+
+## 4.1 新版本提示（扩展内）
+
+上游的「刷新提示」是商店自动更新后提醒刷新页面，依赖 `scripting` 权限，Safari 版不可用，也不能发现新版本。Safari 版自行实现：
+
+- 后台定时（启动时及每 12 小时，结果缓存在 `storage.local`）请求 `https://api.github.com/repos/IgnatAi401/BewlyCat-Safari/releases/latest`，取 `tag_name` 解析出 `X.Y.Z.N`，与 `browser.runtime.getManifest().version` 比较。GitHub 未登录接口限 60 次/小时/IP，此频率足够。
+- 有新版本时，在 B 站页面由内容脚本显示提示条：新版本号、更新摘要、「查看更新」（打开 Release 页）、「忽略此版本」、「稍后提醒」。不自动下载或安装。
+- 设置中提供「检查更新」开关（默认开）和「立即检查」按钮；请求失败静默忽略，不影响扩展其他功能。
+- 代码放在 `src/safari/updateCheck/`；接入点：后台入口一行启动、内容脚本一行挂载提示条、设置页一个开关，登记到接入点清单。
+- 临时扩展无法自动更新：提示条只引导用户按第 7 节手动升级。
 
 ## 5. 同步上游
 
@@ -57,7 +69,7 @@
 2. `git switch safari && git merge <上游新标签>`，提交信息 `merge: 同步上游 vX.Y.Z`。
 3. 解决冲突时对照「接入点清单」；上游新增的功能要判断在 Safari 下是否可用（是否依赖 iframe、抽屉、`scripting` 权限等），不可用的在 `src/safari/` 里关闭。
 4. `pnpm install --frozen-lockfile`，`pnpm typecheck`，`pnpm build-safari`。
-5. 按第 6 节测试清单在 Safari 中实测，通过后更新 `CHANGELOG-safari.md`、打标签、推送：`git push origin safari --tags`。
+5. 按第 6 节测试清单在 Safari 中实测，通过后重置 `SAFARI_REVISION` 为 1，按第 4 节发布 Release。
 
 ## 6. 推送前测试清单
 
@@ -69,6 +81,7 @@
 - [ ] 深色/浅色主题切换，B 站原生区域跟随
 - [ ] 评论区：树状回复、用户名与链接主题色
 - [ ] 设置页：抽屉相关选项已强制关闭
+- [ ] 新版本提示：把本地版本号临时调低，确认提示条出现、链接正确、「忽略此版本」生效
 
 ## 7. 用户如何使用与更新
 
@@ -84,9 +97,9 @@
 
 **接收更新**
 
-- 在 GitHub 仓库点 Watch → Custom → 勾选需要的通知（或关注 `CHANGELOG-safari.md`）。
-- 更新：`git pull`，`pnpm install --frozen-lockfile`，`pnpm build-safari`，在 Safari 中移除旧临时扩展后重新添加。
-- 想停在某个稳定版本：`git checkout v1.8.1-safari.1` 后构建。
+- 扩展会在 B 站页面提示新版本；也可以在 GitHub 仓库点 Watch → Custom → Releases 接收邮件通知。
+- 用 Git 更新：`git pull`（或 `git checkout <新标签>`），`pnpm install --frozen-lockfile`，`pnpm build-safari`，在 Safari 中移除旧临时扩展后重新添加。
+- 不用 Git：在 Release 页下载「Source code (zip)」，解压后执行同样的构建与重新添加步骤。
 
 **需要在 README 说明的限制**
 
@@ -107,6 +120,7 @@
 - [ ] 推送 `safari`，在 GitHub 设为默认分支并开启分支保护（禁止强推）
 - [ ] 应用旧仓库的 `patches/safari.patch` 作为首个功能提交，构建并实测
 - [ ] 将 Safari 逻辑重构到 `src/safari/`，更新接入点清单
+- [ ] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
 - [ ] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
-- [ ] 打标签 `v1.8.1-safari.1`，实测通过后归档 `BewlyCat-Safari-Local`
+- [ ] 发布 Release `v1.8.1-safari.1`，实测通过后归档 `BewlyCat-Safari-Local`
 - [ ] 同步上游最新版本（当前上游 `main` 已领先 `v1.8.1`）
