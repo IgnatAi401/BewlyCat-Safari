@@ -1,6 +1,6 @@
 # BewlyCat for Safari
 
-基于 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 制作的 **Safari 浏览器适配版本**，用于改善 Bilibili 网页的浏览体验。本项目为非官方适配，原项目及主要功能由上游作者和贡献者开发，感谢他们的工作。功能介绍见[上游 README](https://github.com/keleus/BewlyCat#readme)。
+基于 [keleus/BewlyCat](https://github.com/keleus/BewlyCat) 制作的 **Safari 浏览器适配版本**，并专门针对 Safari 做了性能优化，用于改善 Bilibili 网页的浏览体验。本项目为非官方适配，原项目及主要功能由上游作者和贡献者开发，感谢他们的工作。功能介绍见[上游 README](https://github.com/keleus/BewlyCat#readme)。
 
 每个版本在 [Releases](https://github.com/IgnatAi401/BewlyCat-Safari/releases) 提供已构建的扩展压缩包，可在 macOS 的 Safari（18.4 或更高版本）中本地加载，无需安装依赖或编译。
 
