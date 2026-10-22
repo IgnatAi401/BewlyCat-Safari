@@ -158,4 +158,4 @@ README 保持简短（参照旧仓库 `BewlyCat-Safari-Local` 的写法），只
 - [x] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
 - [x] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
 - [ ] 发布 Release `v1.8.1-safari.1`（附构建压缩包），实测通过后归档 `BewlyCat-Safari-Local`
-- [ ] 同步上游最新版本（当前上游 `main` 已领先 `v1.8.1`）
+- [x] 同步上游 `v1.8.2`，发布 `v1.8.2-safari.1`

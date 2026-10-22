@@ -2,9 +2,9 @@
 
 只记录 Safari 适配部分的改动；上游功能更新见各版本对应的[上游 Release](https://github.com/keleus/BewlyCat/releases)。
 
-## v1.8.2-safari.1（未发布）
+## v1.8.2-safari.1（2026-10-22）
 
-基于上游 [v1.8.2](https://github.com/keleus/BewlyCat/releases/tag/v1.8.2)。
+基于上游 [v1.8.2](https://github.com/keleus/BewlyCat/releases/tag/v1.8.2)。上游本版要点：首页沉浸式模式、视频环境光、听视频外观个性化、App 推荐单列 / 双列、动态页 3 / 4 列、中英文自动空隙、关于页开源协议展示等，详见上游 Release。
 
 ### Safari 适配
 
@@ -15,6 +15,10 @@
 ### 已知问题
 
 - 视频卡片「在抽屉中打开」「在弹窗中打开」和通知抽屉不可用。
+
+### 升级步骤
+
+在 Safari 中移除旧的临时扩展，下载本版本压缩包并解压，重新添加解压后的文件夹（见 [README](README.md)）。
 
 ## v1.8.1-safari.1（2026-10-21）
 
