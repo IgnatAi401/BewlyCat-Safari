@@ -42,8 +42,8 @@
 | `vite.config.content.ts` | `css` 选项 | `scopeSafariHostSelectors()`：Safari 把清单注入的 `style.css` 也应用到页面所有 Shadow DOM，将通用 `:host` 限定为 `:host(#bewly)` |
 | `tsup.config.ts` | `define` | 定义 `__SAFARI__`（后台） |
 | `src/global.d.ts` | 顶部 | 声明 `__SAFARI__` |
-| `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：版本号、注入范围、权限、规则集、最低 Safari 18.4 |
-| `src/logic/storage.ts` | `settings` 的 `normalize` 末尾 | `applySafariSettingsFixes()`：关闭抽屉打开方式与通知抽屉 |
+| `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：版本号、注入范围（每个内容脚本拆成两条：视频页同时注入 iframe，供首页沉浸式模式使用；其余页面只注入顶层）、权限、规则集、最低 Safari 18.4 |
+| `src/logic/storage.ts` | `settings` 的 `normalize` 末尾 | `applySafariSettingsFixes()`：关闭抽屉、弹窗打开方式（含右键菜单项）与通知抽屉 |
 | `src/composables/useDark.ts` | `syncBilibiliTheme()` 末尾 | 主题切换转交页面脚本 |
 | `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`bili-comment-user-info` 更新回调开头、`message` 监听之前 | 评论区主题色样式（用户名样式单独注入，不进通用样式表，以免跳过性别/楼主/IP 属地处理）；注册 Safari 消息桥（派发 `global.themeChange`）；`deferSafariHiddenHomepageFeed()`：BewlyCat 首页接管期间暂缓被隐藏的原首页的信息流请求（原首页会连续加载 10 页推荐），切回原版首页时再发出；`updateCommentReplyTree()` 之前新增 `updateCommentReplyTreeAfterRender()`，评论组件增强回调中的 3 处调用改用它：`coalesceSafariCommentReplyTreeUpdate()` 把同一楼层同帧的重复重算合并到下一帧；`updateCommentReplyTree()` 开头 `noteSafariCommentReplyTreeUpdate()` 记录本帧已重算；`observeCommentReplyTreeLayout()` 的 ResizeObserver 回调中，本帧已重算过的楼层不再安排重算（尺寸变化来自重算自身写入的缩进） |
 | `src/background/index.ts` | 末尾；`syncPreventMobileRedirectRule()` 的 `updateDynamicRules` 参数 | `setupSafariUpdateCheck()`；`adaptSafariRuleUpdate()` 改写规则 |
@@ -51,7 +51,7 @@
 | `src/background/appClient.ts` | `syncAppClientHeaderRules()` 的 `updateSessionRules` 参数 | `adaptSafariRuleUpdate()`：Safari 不支持正则 `\|` 和 `sec-ch-ua*` 请求头 |
 | `src/background/loginStateWatcher.ts` | `setupLoginStateWatcher()` 开头 | `setupSafariLoginStateWatcher()`：Safari 的 `cookies.onChanged` 不带 changeInfo，`cookies` API 读不到 B 站 Cookie，改用 nav 接口判断 |
 | `src/contentScripts/index.ts` | `onDOMLoaded()` 末尾 | `stopSafariLiveBadgeAnimation()`：动态页「正在直播」角标的逐帧动画停在第一帧（该动画让空闲 CPU 多占约 14 个百分点）；`hideSafariPageScrollbar()`：隐藏播放页等页面的文档滚动条，避免「始终显示滚动条」时把界面往左挤；`mountSafariUpdateBanner()` |
-| `src/components/Settings/About/About.vue` | `about-maintenance` 开头；`checkGitHubRelease()` 开头；「浏览器云同步」「版本提醒」设置组与链接/贡献者卡片的 `v-if`；版本号链接 `href` | 「BewlyCat Safari」设置组（检查更新开关、立即检查）；不检查上游 Release（不显示 NEW 标记）；隐藏上游「新版本提醒」开关、依赖 Chrome 账号的「浏览器云同步」、上游 GitHub/作者主页/贡献者链接；版本号改链到本仓库 Releases |
+| `src/components/Settings/About/About.vue` | `about-maintenance` 开头；`checkGitHubRelease()` 开头；「浏览器云同步」「版本提醒」设置组与 `about-info-card` 中链接、贡献者两节的 `v-if`；版本号链接 `href` | 「BewlyCat Safari」设置组（检查更新开关、立即检查）；不检查上游 Release（不显示 NEW 标记）；隐藏上游「新版本提醒」开关、依赖 Chrome 账号的「浏览器云同步」、上游 GitHub/作者主页/贡献者链接（开源协议一节照常显示）；版本号改链到本仓库 Releases |
 | `src/components/Settings/searchCatalog.ts` | 「关于」条目列表 | 设置搜索中不出现已隐藏的「浏览器云同步」「版本提醒」 |
 | `src/contentScripts/views/Home/components/VersionReminder.vue` | `shouldShowReminder` 开头 | 隐藏上游首页「新版本说明」按钮，只保留 Safari 版自己的更新提示 |
 | `src/components/Picture.vue`、`src/components/LazyPicture.vue` | 模板中的 `<source>` 与 `<img :src>`；`LazyPicture` 的 `imageSrc` 与 `isCurrentImage()` 的 `src` 比较 | `getSafariPictureImageSrc()`：不渲染 `<source>`，`<img>` 直接加载 AVIF。WebKit 增删 `src`/`srcset` 时立即重新选源，原写法同一张图会请求 3～4 次 |
@@ -102,7 +102,8 @@
 - [ ] 登录、退出登录、接口请求（Origin/Referer 规则生效）
 - [ ] 深色/浅色主题切换，B 站原生区域跟随
 - [ ] 评论区：树状回复、用户名与链接主题色
-- [ ] 设置页：抽屉相关选项已强制关闭
+- [ ] 设置页：抽屉、弹窗打开相关选项已强制关闭
+- [ ] 首页沉浸式模式：进入、开播、上一条/下一条、滚轮与键盘切换、退出
 - [ ] 新版本提示：把本地版本号临时调低，确认提示条出现、链接正确、「忽略此版本」生效
 
 ### 6.1 性能测试

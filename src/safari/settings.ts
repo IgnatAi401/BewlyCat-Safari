@@ -1,7 +1,7 @@
-// Safari 不向 iframe 注入脚本，依赖 iframe 的抽屉打开方式必须关闭。
+// Safari 只向视频页 iframe 注入脚本（见 manifest.ts），依赖 iframe 的抽屉、弹窗打开方式必须关闭。
 export function applySafariSettingsFixes(record: Record<string, any>) {
   record.openNotificationsPageAsDrawer = false
-  if (record.videoCardLinkOpenMode === 'drawer')
+  if (record.videoCardLinkOpenMode === 'drawer' || record.videoCardLinkOpenMode === 'dialog')
     record.videoCardLinkOpenMode = 'newTab'
 
   // 旧版 Safari 本地包曾关闭这些功能；迁移一次，恢复为可用的默认值。
@@ -15,9 +15,10 @@ export function applySafariSettingsFixes(record: Record<string, any>) {
     record.safariRestoredFeatureProfileVersion = 1
   }
 
-  const drawerMenuItem = Array.isArray(record.videoCardContextMenuConfig)
-    ? record.videoCardContextMenuConfig.find((item: any) => item?.key === 'openInDrawer')
-    : null
-  if (drawerMenuItem?.visible)
-    drawerMenuItem.visible = false
+  if (Array.isArray(record.videoCardContextMenuConfig)) {
+    for (const item of record.videoCardContextMenuConfig) {
+      if ((item?.key === 'openInDrawer' || item?.key === 'openInDialog') && item.visible)
+        item.visible = false
+    }
+  }
 }

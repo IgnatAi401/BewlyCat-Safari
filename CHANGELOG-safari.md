@@ -2,6 +2,20 @@
 
 只记录 Safari 适配部分的改动；上游功能更新见各版本对应的[上游 Release](https://github.com/keleus/BewlyCat/releases)。
 
+## v1.8.2-safari.1（未发布）
+
+基于上游 [v1.8.2](https://github.com/keleus/BewlyCat/releases/tag/v1.8.2)。
+
+### Safari 适配
+
+- 视频页（`/video/`、`/list/`、`/bangumi/play/`、`/festival/`）也会注入 iframe，首页沉浸式模式可用；其余页面仍不注入 iframe。
+- 上游新增的视频卡片「弹窗打开」与右键菜单「在弹窗中打开」强制关闭（与抽屉打开方式相同，依赖 iframe）。
+- 「设置 → 关于」照常显示上游新增的开源协议与第三方依赖许可，只隐藏上游链接与贡献者。
+
+### 已知问题
+
+- 视频卡片「在抽屉中打开」「在弹窗中打开」和通知抽屉不可用。
+
 ## v1.8.1-safari.1（2026-10-21）
 
 基于上游 [v1.8.1](https://github.com/keleus/BewlyCat/releases/tag/v1.8.1)。本仓库取代旧的 `BewlyCat-Safari-Local`，构建好的扩展改为附在 Release 中下载。

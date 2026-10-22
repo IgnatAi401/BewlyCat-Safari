@@ -4,16 +4,20 @@ import type { Manifest } from 'webextension-polyfill'
 import { CONTENT_SCRIPT_EXCLUDE_MATCHES } from '../constants/contentScript'
 import { getSafariExtensionVersion } from './version'
 
-// 只注入 BewlyCat 实际接管的页面，且不注入 iframe（抽屉打开方式因此不可用）。
+// 只注入 BewlyCat 实际接管的页面。iframe 只注入视频页（供首页沉浸式模式使用），
+// 其余页面不注入 iframe（抽屉、弹窗打开方式因此不可用）。
+const SAFARI_VIDEO_PAGE_PATH_MATCHES = [
+  '*://www.bilibili.com/video/*',
+  '*://www.bilibili.com/list/*',
+  '*://www.bilibili.com/bangumi/play/*',
+  '*://www.bilibili.com/festival/*',
+]
+
 const SAFARI_MAIN_SITE_PATH_MATCHES = [
   '*://www.bilibili.com/',
   // 带参数的首页（如 /?spm_id_from=...）：匹配模式的路径部分包含查询参数。
   '*://www.bilibili.com/?*',
   '*://www.bilibili.com/index.html*',
-  '*://www.bilibili.com/video/*',
-  '*://www.bilibili.com/list/*',
-  '*://www.bilibili.com/bangumi/play/*',
-  '*://www.bilibili.com/festival/*',
   '*://www.bilibili.com/watchlater*',
   '*://www.bilibili.com/v/*',
   '*://www.bilibili.com/c/*',
@@ -57,6 +61,8 @@ const SAFARI_CONTENT_SCRIPT_MATCHES = [
   '*://music.bilibili.com/pc/music-center*',
 ]
 
+const SAFARI_FRAME_CONTENT_SCRIPT_MATCHES = withLocalePaths(SAFARI_VIDEO_PAGE_PATH_MATCHES)
+
 const SAFARI_CONTENT_SCRIPT_EXCLUDE_MATCHES = [
   ...CONTENT_SCRIPT_EXCLUDE_MATCHES,
   '*://t.bilibili.com/vote*',
@@ -72,12 +78,21 @@ export function applySafariManifest(manifest: Manifest.WebExtensionManifest, ups
     permission === 'declarativeNetRequest' ? 'declarativeNetRequestWithHostAccess' : permission,
   )
 
-  manifest.content_scripts = manifest.content_scripts?.map(script => ({
-    ...script,
-    matches: [...SAFARI_CONTENT_SCRIPT_MATCHES],
-    exclude_matches: [...SAFARI_CONTENT_SCRIPT_EXCLUDE_MATCHES],
-    all_frames: false,
-  }))
+  // 每个脚本拆成两条：其余页面只注入顶层，视频页同时注入 iframe；两组匹配不重叠，避免重复注入。
+  manifest.content_scripts = manifest.content_scripts?.flatMap(script => [
+    {
+      ...script,
+      matches: [...SAFARI_CONTENT_SCRIPT_MATCHES],
+      exclude_matches: [...SAFARI_CONTENT_SCRIPT_EXCLUDE_MATCHES],
+      all_frames: false,
+    },
+    {
+      ...script,
+      matches: [...SAFARI_FRAME_CONTENT_SCRIPT_MATCHES],
+      exclude_matches: [...SAFARI_CONTENT_SCRIPT_EXCLUDE_MATCHES],
+      all_frames: true,
+    },
+  ])
 
   const record = manifest as Record<string, any>
   for (const resource of record.declarative_net_request?.rule_resources ?? []) {

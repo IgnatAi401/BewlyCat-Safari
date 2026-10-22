@@ -344,10 +344,9 @@ async function handleCopyEnvironmentInfo() {
       </section>
 
       <section
-        v-if="!isSafariBuild"
         class="about-info-card"
       >
-        <section w-full>
+        <section v-if="!isSafariBuild" w-full>
           <h3 class="title">
             {{ $t('settings.links') }}
           </h3>
@@ -378,7 +377,7 @@ async function handleCopyEnvironmentInfo() {
             </a>
           </div>
         </section>
-        <section w-full>
+        <section v-if="!isSafariBuild" w-full>
           <h3 class="title">
             {{ $t('settings.current_contributors') }}
           </h3>
