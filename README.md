@@ -18,6 +18,6 @@
 
 有新版本时，扩展会在 B 站页面左下角提示。下载新的压缩包并解压，在 **Safari → 设置 → 开发者** 中移除旧的临时扩展后重新添加；仅刷新网页不会加载新文件。
 
-各版本改动见 [CHANGELOG-safari.md](CHANGELOG-safari.md)。Safari 版的问题请在[本仓库 Issues](https://github.com/IgnatAi401/BewlyCat-Safari/issues) 反馈，不要打扰上游。
+各版本改动见 [CHANGELOG.md](CHANGELOG.md)。Safari 版的问题请在[本仓库 Issues](https://github.com/IgnatAi401/BewlyCat-Safari/issues) 反馈，不要打扰上游。
 
 # 请勿擅自发布至 App Store!!

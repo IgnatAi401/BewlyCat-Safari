@@ -66,7 +66,7 @@
 - 版本跟随上游：同步上游 `vX.Y.Z` 后发布 `vX.Y.Z-safari.1`；上游不变、只修 Safari 问题时序号加 1（`-safari.2`…）。Release 标题写作 `vX.Y.Z（Safari 第 N 版）`。
 - 扩展版本号：`package.json` 的 `version` 保持上游原值（改它会在每次同步时冲突）。Safari 修订号单独放在 `src/safari/version.ts`（如 `SAFARI_REVISION = 1`），由 `src/manifest.ts` 在 Safari 构建时拼成 `manifest.version = "X.Y.Z.N"`。
 - 每个 Release 附一个构建压缩包 `BewlyCat-Safari-vX.Y.Z-safari.N.zip`：压缩包根目录直接是 `manifest.json`（macOS 解压后得到同名文件夹，用户直接选它）。`extension-safari/` 和 `*.zip` 已在 `.gitignore` 中，不提交。
-- Release 说明里写：基于的上游版本及上游更新要点链接、Safari 部分的新增与修复、已知问题、升级步骤。同样内容记入 `CHANGELOG-safari.md`。
+- Release 说明里写：基于的上游版本及上游更新要点链接、Safari 部分的新增与修复、已知问题、升级步骤。同样内容记入 `CHANGELOG.md`。
 - 发布：在要打标签的提交上重新构建并实测，然后：
   1. `pnpm build-safari`
   2. `(cd extension-safari && zip -r -X ../BewlyCat-Safari-vX.Y.Z-safari.N.zip . -x '*.DS_Store')`
@@ -139,7 +139,7 @@ README 保持简短（参照旧仓库 `BewlyCat-Safari-Local` 的写法），只
 **限制**
 
 - 临时扩展在 Safari 退出后通常会被移除，需要重新添加。
-- 其余已知问题（iframe 内保持原样式、抽屉打开方式不可用等）写在 `CHANGELOG-safari.md`，不进 README。
+- 其余已知问题（iframe 内保持原样式、抽屉打开方式不可用等）写在 `CHANGELOG.md`，不进 README。
 
 ## 8. 许可证、署名与沟通
 
@@ -156,6 +156,6 @@ README 保持简短（参照旧仓库 `BewlyCat-Safari-Local` 的写法），只
 - [x] 应用旧仓库的 `patches/safari.patch`（构建通过，待 Safari 实测）
 - [x] 将 Safari 逻辑重构到 `src/safari/`，更新接入点清单
 - [x] 实现新版本提示（第 4.1 节）与 `src/safari/version.ts` 版本号拼接
-- [x] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG-safari.md` 和 Issue 模板
+- [x] 改写 README（安装、更新、已知限制）、新增 `CHANGELOG.md` 和 Issue 模板
 - [ ] 发布 Release `v1.8.1-safari.1`（附构建压缩包），实测通过后归档 `BewlyCat-Safari-Local`
 - [x] 同步上游 `v1.8.2`，发布 `v1.8.2-safari.1`
