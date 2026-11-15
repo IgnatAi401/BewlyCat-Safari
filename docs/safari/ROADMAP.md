@@ -40,6 +40,7 @@
 | `README.md` | 全文 | 改写为 Safari 版说明（`merge=ours`，上游 README 改动不合入） |
 | `vite.config.ts` | `replace()` | 定义 `__SAFARI__`（内容脚本、页面脚本） |
 | `vite.config.content.ts` | `css` 选项 | `scopeSafariHostSelectors()`：将通用 `:host` 限定为 `:host(#bewly)`。最初用于应对 Safari 把清单注入的 `style.css` 应用到页面所有 Shadow DOM；现在清单已不注入样式，保留作为保险 |
+| `eslint.config.mjs` | `ignores` 末尾 | 忽略 `safari-perf-reports/`（safari-perf-kit 在本机生成的性能报告，否则 pre-push 的 `pnpm lint` 会失败） |
 | `tsup.config.ts` | `define` | 定义 `__SAFARI__`（后台） |
 | `src/global.d.ts` | 顶部 | 声明 `__SAFARI__` |
 | `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：去掉内容脚本的 `css`（不通过清单注入 `style.css`，见下方 `src/contentScripts/index.ts` 一行）、版本号、注入范围（每个内容脚本拆成两条：视频页同时注入 iframe，供首页沉浸式模式使用；其余页面只注入顶层）、权限、规则集、最低 Safari 18.4 |

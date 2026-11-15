@@ -19,6 +19,8 @@ export default antfu(
       '**/extension/**',
       '**/extension-firefox/**',
       '**/.kiro/**',
+      // Safari：safari-perf-kit 在本机生成的性能报告，不进 Git。
+      '**/safari-perf-reports/**',
     ],
     rules: {
       'vue/max-attributes-per-line': [
