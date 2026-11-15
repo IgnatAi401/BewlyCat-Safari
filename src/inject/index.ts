@@ -2,6 +2,7 @@
 import injectMessages from 'virtual:bewly-inject-messages'
 
 import { isSearchResultApiPath } from '~/constants/searchApi'
+import { installSafariAdaptedShadowStyles } from '~/safari/adaptedShadowStyles'
 import { coalesceSafariCommentReplyTreeUpdate, isSafariCommentReplyTreeUpdatedThisFrame, noteSafariCommentReplyTreeUpdate } from '~/safari/commentReplyTree'
 import { deferSafariHiddenHomepageFeed } from '~/safari/hiddenHomepageFeed'
 import { SAFARI_COMMENT_SHADOW_STYLE_PATCHES, SAFARI_COMMENT_USER_INFO_STYLE_PATCH, setupSafariPageMessageBridge } from '~/safari/pageBridge'
@@ -4991,6 +4992,7 @@ else if (shouldInitializePageScript) {
   if (__SAFARI__) {
     setupSafariPageMessageBridge()
     deferSafariHiddenHomepageFeed()
+    installSafariAdaptedShadowStyles()
   }
 
   // 添加消息监听器

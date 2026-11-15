@@ -39,18 +39,18 @@
 | `.gitattributes` | 末尾 | `AGENTS.md`、`CLAUDE.md`、`README.md` 使用 `merge=ours` |
 | `README.md` | 全文 | 改写为 Safari 版说明（`merge=ours`，上游 README 改动不合入） |
 | `vite.config.ts` | `replace()` | 定义 `__SAFARI__`（内容脚本、页面脚本） |
-| `vite.config.content.ts` | `css` 选项 | `scopeSafariHostSelectors()`：Safari 把清单注入的 `style.css` 也应用到页面所有 Shadow DOM，将通用 `:host` 限定为 `:host(#bewly)` |
+| `vite.config.content.ts` | `css` 选项 | `scopeSafariHostSelectors()`：将通用 `:host` 限定为 `:host(#bewly)`。最初用于应对 Safari 把清单注入的 `style.css` 应用到页面所有 Shadow DOM；现在清单已不注入样式，保留作为保险 |
 | `tsup.config.ts` | `define` | 定义 `__SAFARI__`（后台） |
 | `src/global.d.ts` | 顶部 | 声明 `__SAFARI__` |
-| `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：版本号、注入范围（每个内容脚本拆成两条：视频页同时注入 iframe，供首页沉浸式模式使用；其余页面只注入顶层）、权限、规则集、最低 Safari 18.4 |
+| `src/manifest.ts` | `getManifest()` 末尾 | `applySafariManifest()`：去掉内容脚本的 `css`（不通过清单注入 `style.css`，见下方 `src/contentScripts/index.ts` 一行）、版本号、注入范围（每个内容脚本拆成两条：视频页同时注入 iframe，供首页沉浸式模式使用；其余页面只注入顶层）、权限、规则集、最低 Safari 18.4 |
 | `src/logic/storage.ts` | `settings` 的 `normalize` 末尾 | `applySafariSettingsFixes()`：关闭抽屉、弹窗打开方式（含右键菜单项）与通知抽屉 |
 | `src/composables/useDark.ts` | `syncBilibiliTheme()` 末尾 | 主题切换转交页面脚本 |
-| `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`bili-comment-user-info` 更新回调开头、`message` 监听之前 | 评论区主题色样式（用户名样式单独注入，不进通用样式表，以免跳过性别/楼主/IP 属地处理）；注册 Safari 消息桥（派发 `global.themeChange`）；`deferSafariHiddenHomepageFeed()`：BewlyCat 首页接管期间暂缓被隐藏的原首页的信息流请求（原首页会连续加载 10 页推荐），切回原版首页时再发出；`updateCommentReplyTree()` 之前新增 `updateCommentReplyTreeAfterRender()`，评论组件增强回调中的 3 处调用改用它：`coalesceSafariCommentReplyTreeUpdate()` 把同一楼层同帧的重复重算合并到下一帧；`updateCommentReplyTree()` 开头 `noteSafariCommentReplyTreeUpdate()` 记录本帧已重算；`observeCommentReplyTreeLayout()` 的 ResizeObserver 回调中，本帧已重算过的楼层不再安排重算（尺寸变化来自重算自身写入的缩进） |
+| `src/inject/index.ts` | `COMMENT_SHADOW_STYLE_PATCHES` 末尾、`bili-comment-user-info` 更新回调开头、`message` 监听之前 | 评论区主题色样式（用户名样式单独注入，不进通用样式表，以免跳过性别/楼主/IP 属地处理）；注册 Safari 消息桥（派发 `global.themeChange`）；`installSafariAdaptedShadowStyles()`：`src/styles/adaptedStyles/shadowDom/` 中未被其他补丁覆盖的 `:host(bili-xxx)` 规则（评论标签颜色、用户卡片关注按钮悬停色）过去靠清单样式进入 Shadow DOM 生效，现在在组件创建 Shadow DOM 时直接插入，上游改这些规则时同步修改 `src/safari/adaptedShadowStyles.ts`；`deferSafariHiddenHomepageFeed()`：BewlyCat 首页接管期间暂缓被隐藏的原首页的信息流请求（原首页会连续加载 10 页推荐），切回原版首页时再发出；`updateCommentReplyTree()` 之前新增 `updateCommentReplyTreeAfterRender()`，评论组件增强回调中的 3 处调用改用它：`coalesceSafariCommentReplyTreeUpdate()` 把同一楼层同帧的重复重算合并到下一帧；`updateCommentReplyTree()` 开头 `noteSafariCommentReplyTreeUpdate()` 记录本帧已重算；`observeCommentReplyTreeLayout()` 的 ResizeObserver 回调中，本帧已重算过的楼层不再安排重算（尺寸变化来自重算自身写入的缩进） |
 | `src/background/index.ts` | 末尾；`syncPreventMobileRedirectRule()` 的 `updateDynamicRules` 参数 | `setupSafariUpdateCheck()`；`adaptSafariRuleUpdate()` 改写规则 |
 | `src/background/utils.ts` | `doCachedRequest()` 中 `accountId` 赋值一行 | `getSafariAccountId()`：`cookies` API 读不到 `DedeUserID`，接口缓存改用 nav 接口的账号作为键 |
 | `src/background/appClient.ts` | `syncAppClientHeaderRules()` 的 `updateSessionRules` 参数 | `adaptSafariRuleUpdate()`：Safari 不支持正则 `\|` 和 `sec-ch-ua*` 请求头 |
 | `src/background/loginStateWatcher.ts` | `setupLoginStateWatcher()` 开头 | `setupSafariLoginStateWatcher()`：Safari 的 `cookies.onChanged` 不带 changeInfo，`cookies` API 读不到 B 站 Cookie，改用 nav 接口判断 |
-| `src/contentScripts/index.ts` | `onDOMLoaded()` 末尾 | `stopSafariLiveBadgeAnimation()`：动态页「正在直播」角标的逐帧动画停在第一帧（该动画让空闲 CPU 多占约 14 个百分点）；`hideSafariPageScrollbar()`：隐藏播放页等页面的文档滚动条，避免「始终显示滚动条」时把界面往左挤；`mountSafariUpdateBanner()` |
+| `src/contentScripts/index.ts` | `bundledShadowStyleText` 定义之后；`#bewly` Shadow DOM 的 `styleEl.textContent` 赋值；`onDOMLoaded()` 末尾 | `injectSafariPageStyles()`：Safari 会把清单注入的 `style.css`（约 1.1 MB）套用到页面上每一个 Shadow DOM，B 站评论区每种组件都要重建一遍样式规则集，是评论区卡顿的主因；改由内容脚本在 document_start 把同一份样式作为 `<style>` 插到 `<html>` 最前面，只作用于主文档，层叠顺序与清单注入一致（作者级、先于页面样式）；同时把 UnoCSS 的通配规则 `*, ::before, ::after { --un-… }` 换成等价的 `@property` 注册（不再给每个元素写入 50 个变量）；Shadow DOM 样式注入处（`styleEl.textContent`）用 `removeSafariUnoPreflight()` 去掉同一条规则；`stopSafariLiveBadgeAnimation()`：动态页「正在直播」角标的逐帧动画停在第一帧（该动画让空闲 CPU 多占约 14 个百分点）；`hideSafariPageScrollbar()`：隐藏播放页等页面的文档滚动条，避免「始终显示滚动条」时把界面往左挤；`mountSafariUpdateBanner()` |
 | `src/components/Settings/About/About.vue` | `about-maintenance` 开头；`checkGitHubRelease()` 开头；「浏览器云同步」「版本提醒」设置组与 `about-info-card` 中链接、贡献者两节的 `v-if`；版本号链接 `href` | 「BewlyCat Safari」设置组（检查更新开关、立即检查）；不检查上游 Release（不显示 NEW 标记）；隐藏上游「新版本提醒」开关、依赖 Chrome 账号的「浏览器云同步」、上游 GitHub/作者主页/贡献者链接（开源协议一节照常显示）；版本号改链到本仓库 Releases |
 | `src/components/Settings/searchCatalog.ts` | 「关于」条目列表 | 设置搜索中不出现已隐藏的「浏览器云同步」「版本提醒」 |
 | `src/contentScripts/views/Home/components/VersionReminder.vue` | `shouldShowReminder` 开头 | 隐藏上游首页「新版本说明」按钮，只保留 Safari 版自己的更新提示 |
@@ -119,6 +119,14 @@
 登录态测试：自动化 Safari 的 Cookie 只在单个会话内有效。先单独运行 `safaridriver -p 4444`，再用 `node scripts/safari/perf.mjs --variants ext --login --keep-session --scenarios video,moments,history` 打开扫码登录页，用手机 B 站 App 扫码（不要点击窗口，否则会话停止），登录后各场景在同一会话中运行；结束时打印会话 ID，之后用 `--session <ID>` 复用。同一会话中进程内存会累积，内存列不可比。
 
 注意：自动化 Safari 是独立的临时实例，没有登录态，新装的扩展只在该实例退出前有效；自动化实例保留的扩展副本读取的是安装时的文件，重新构建后必须重新执行第 2 步。
+
+### 6.2 性能待办
+
+2026-11-12 排查后剩下的两项，按收益排序。背景数据和量法见 `DEVLOG.md` 同日记录。当时登录态视频页边滚动边加载评论：新构建约 55 fps、长任务约 370 ms，无扩展 58 fps、165 ms。
+
+- [ ] **评论区增强脚本**：页面脚本里评论增强回调在 6 秒滚动中约 130 ms（约 280 次组件增强 91 ms，约 20 次回复树合并重算 41 ms）。已试过无效的做法：整帧批处理（先统一写缩进、再统一读位置、最后统一画线）、样式在 `attachShadow` 时提前注入、缩进变量注册为不继承、引导线结果相同就保留旧 SVG、去掉下一帧补算（会缺线）。还没试的方向：屏幕外的楼层先不重算，进入视口附近再算；`observeCommentReplyTreeLayout()` 每次重算都遍历整个楼层的所有 Shadow DOM 两遍并观察几十个元素，可以只在节点集合变化时重建。
+- [ ] **内容脚本体积**：`index.global.js` 约 4 MB（其中 1.1 MB 是内嵌的样式文本，同一份文本要在主文档和 `#bewly` 各解析一次），视频页加载时注入和解析约多 100～200 ms，有扩展时首次出画面约 900～1100 ms，无扩展 642 ms。方向：视频页等非首页页面用不到首页界面的大部分代码和样式，拆成按需加载；主文档只需要适配 B 站页面的那部分样式，不需要整份。要改构建方式（`vite.config.content.ts`），会提高与上游合并的成本，动手前先评估。
+- [ ] **请求规则匹配（未能复现）**：部分自动化会话里页面每个请求在主线程多花 1～9 ms（随网址长度增长），另一些会话没有。2026-11-12 在日常使用的 Safari 中自测为 0.4 ms，不在变慢状态，暂不处理。自测片段和已排除的因素见 `DEVLOG.md`。
 
 ## 7. 用户如何使用与更新
 

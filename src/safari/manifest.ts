@@ -78,6 +78,9 @@ export function applySafariManifest(manifest: Manifest.WebExtensionManifest, ups
     permission === 'declarativeNetRequest' ? 'declarativeNetRequestWithHostAccess' : permission,
   )
 
+  // 不通过清单注入样式：Safari 会把它套用到页面上所有 Shadow DOM，改由内容脚本只插入主文档（见 pageStyles.ts）。
+  manifest.content_scripts = manifest.content_scripts?.map(({ css: _css, ...script }) => script)
+
   // 每个脚本拆成两条：其余页面只注入顶层，视频页同时注入 iframe；两组匹配不重叠，避免重复注入。
   manifest.content_scripts = manifest.content_scripts?.flatMap(script => [
     {

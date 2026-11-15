@@ -10,6 +10,7 @@ import type { DefaultVideoPlayerMode } from '~/logic'
 import { localSettings, localSettingsReady, settings, settingsReady } from '~/logic'
 import { setupApp } from '~/logic/common-setup'
 import { stopSafariLiveBadgeAnimation } from '~/safari/liveBadgeAnimation'
+import { injectSafariPageStyles, removeSafariUnoPreflight } from '~/safari/pageStyles'
 import { hideSafariPageScrollbar } from '~/safari/scrollViewport'
 import { mountSafariUpdateBanner } from '~/safari/updateCheck/banner'
 import { useTopBarStore } from '~/stores/topBarStore'
@@ -87,6 +88,9 @@ const contentScriptGlobal = globalThis as typeof globalThis & {
 const shouldInitializeContentScript = !contentScriptGlobal.__BEWLYCAT_CONTENT_SCRIPT_INITIALIZED__
   && !isInBilibiliLiveContext()
 const bundledShadowStyleText = contentScriptGlobal.__BEWLYCAT_BUNDLED_STYLE_TEXT__
+// Safari：清单不再注入 style.css，改为只插入主文档（见 src/safari/pageStyles.ts）。
+if (__SAFARI__)
+  injectSafariPageStyles(bundledShadowStyleText)
 const contentScriptManifest = browser.runtime.getManifest()
 const contentScriptRuntimeUrl = browser.runtime.getURL('')
 
@@ -1591,7 +1595,8 @@ else if (shouldInitializeContentScript) {
     resetStyleEl.textContent = `${RESET_BEWLY_CSS}`
     const styleEl = document.createElement('style')
     styleEl.setAttribute('data-bewly-bundled-styles', '')
-    styleEl.textContent = bundledShadowStyleText
+    // Safari：通配规则已由主文档的 @property 注册替代（见 src/safari/pageStyles.ts）。
+    styleEl.textContent = __SAFARI__ ? removeSafariUnoPreflight(bundledShadowStyleText) : bundledShadowStyleText
     shadowDOM.appendChild(resetStyleEl)
     shadowDOM.appendChild(styleEl)
     shadowDOM.appendChild(root)
