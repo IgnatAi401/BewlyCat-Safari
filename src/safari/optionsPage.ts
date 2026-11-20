@@ -17,8 +17,18 @@ async function syncSafariSettingsPageCookies() {
   }
 }
 
+// 页面内的设置浮层（:host { font-family: inherit }）继承 B 站页面的无衬线字体；独立设置页的文档
+// 没有设置字体，Safari 会用默认的衬线字体（中文显示为宋体）。这里给文档指定扩展的字体栈。
+function applySafariOptionsPageFont() {
+  const style = document.createElement('style')
+  style.setAttribute('data-bewly-safari-options-font', '')
+  style.textContent = 'html { font-family: var(--bew-fonts); }'
+  document.head.appendChild(style)
+}
+
 // 设置页：替代上游 bootstrap()，不注册 cookies.onChanged。
 export async function bootstrapSafariOptionsPage(mount: () => void) {
+  applySafariOptionsPageFont()
   setBilibiliCookieSnapshot(new Map())
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible')

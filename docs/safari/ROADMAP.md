@@ -55,7 +55,7 @@
 | `src/components/Settings/About/About.vue` | `about-maintenance` 开头；`checkGitHubRelease()` 开头；「浏览器云同步」「版本提醒」设置组与 `about-info-card` 中链接、贡献者两节的 `v-if`；版本号链接 `href` | 「BewlyCat Safari」设置组（检查更新开关、立即检查）；不检查上游 Release（不显示 NEW 标记）；隐藏上游「新版本提醒」开关、上游 GitHub/作者主页/贡献者链接（开源协议一节照常显示）；版本号改链到本仓库 Releases |
 | `src/components/Settings/Data/Data.vue` | 「浏览器云同步」设置组的 `v-if`；`<script>` 末尾 | 隐藏依赖 Chrome 账号的「浏览器云同步」（上游 v1.8.4 从「关于」移到「数据」） |
 | `src/components/Settings/searchCatalog.ts` | 「数据」「关于」条目列表 | 设置搜索中不出现已隐藏的「浏览器云同步」「版本提醒」 |
-| `src/options/main.ts` | `bootstrap()` 开头 | `bootstrapSafariOptionsPage()`：独立设置页的 B 站 Cookie 快照（`getUserID` / `getCSRF` 依赖它）。Safari 的 `cookies` API 读不到 B 站 Cookie、`onChanged` 不带 changeInfo，改为经后台向最近访问的 B 站标签页顶层框架读取 `document.cookie`；没有打开的 B 站页面时视为未登录，设置页重新可见时再同步 |
+| `src/options/main.ts` | `bootstrap()` 开头 | `bootstrapSafariOptionsPage()`：独立设置页的 B 站 Cookie 快照（`getUserID` / `getCSRF` 依赖它）。Safari 的 `cookies` API 读不到 B 站 Cookie、`onChanged` 不带 changeInfo，改为经后台向最近访问的 B 站标签页顶层框架读取 `document.cookie`；没有打开的 B 站页面时视为未登录，设置页重新可见时再同步；同时给文档指定扩展字体栈（`var(--bew-fonts)`），否则 Safari 用默认衬线字体（中文为宋体） |
 | `src/contentScripts/views/Home/components/VersionReminder.vue` | `shouldShowReminder` 开头 | 隐藏上游首页「新版本说明」按钮，只保留 Safari 版自己的更新提示 |
 | `src/components/Picture.vue`、`src/components/LazyPicture.vue` | 模板中的 `<source>` 与 `<img :src>`；`LazyPicture` 的 `imageSrc` 与 `isCurrentImage()` 的 `src` 比较 | `getSafariPictureImageSrc()`：不渲染 `<source>`，`<img>` 直接加载 AVIF。WebKit 增删 `src`/`srcset` 时立即重新选源，原写法同一张图会请求 3～4 次 |
 | `src/contentScripts/features/scrollBridge.ts` | `handleViewportScroll()` 中同步 `window.scrollTo` 之前 | 首页滚动时不再每帧把位置同步到文档，停止滚动后同步一次（每帧同步占滚动时主线程约 12%） |
