@@ -1,16 +1,10 @@
 // 内容脚本中运行。
 //
-// Safari 把清单（manifest）注入的内容脚本样式套用到页面上每一个 Shadow DOM，而不只是主文档。
-// B 站评论区每种组件（楼层、回复、用户信息、按钮、头像、图标……）各有一个 Shadow DOM，
-// WebKit 要为每一种把整份 style.css（约 1.1 MB）重新建一遍样式规则集：评论首次出现时
-// 卡顿数百毫秒，是 Safari 上评论区滚动和打开视频页卡顿的主要来源。
-//
-// Safari 构建不再通过清单注入 style.css（见 manifest.ts），改由内容脚本在 document_start
-// 把同一份样式作为 <style> 插到 <html> 的最前面：只作用于主文档，层叠顺序与清单注入时一致
-// （清单注入的样式是作者级、排在页面所有样式之前）。
-// #bewly 自己的 Shadow DOM 仍由内容脚本单独注入样式，不受影响。
-
-const PAGE_STYLE_ATTRIBUTE = 'data-bewly-page-styles'
+// 背景：Safari 会把清单注入的内容脚本样式套用到页面上每一个 Shadow DOM（B 站评论区每种组件
+// 都要把约 1.1 MB 的 style.css 重建一遍样式规则集，是评论区卡顿的主因）。上游 v1.8.4 起
+// 也不再通过清单注入样式，改为内容脚本在 document_start 把同一份样式插到 <html> 最前面
+// （src/contentScripts/index.ts 的 ensureHostBundledStyles()），与 Safari 版此前的做法一致。
+// Safari 版只在上游插入的样式文本上再做下面的处理。
 
 // UnoCSS 的预设规则 `*, ::before, ::after { --un-rotate: 0; … }` 给页面上每个元素和伪元素
 // 都写入约 50 个自定义属性。未注册的自定义属性默认会继承，于是每个元素都带一份自己的
@@ -48,32 +42,11 @@ export function replaceUnoPreflightWithRegisteredProperties(cssText: string): st
   return registrations + stripped
 }
 
-export function injectSafariPageStyles(cssText: string | undefined) {
-  if (!cssText)
-    return
+let safariHostStyleCache: { source: string, result: string } | undefined
 
-  const pageCssText = replaceUnoPreflightWithRegisteredProperties(cssText)
-  const insert = (): boolean => {
-    const root = document.documentElement
-    if (!root)
-      return false
-    if (root.querySelector(`:scope > style[${PAGE_STYLE_ATTRIBUTE}]`))
-      return true
-
-    const style = document.createElement('style')
-    style.setAttribute(PAGE_STYLE_ATTRIBUTE, '')
-    style.textContent = pageCssText
-    root.insertBefore(style, root.firstChild)
-    return true
-  }
-
-  if (insert())
-    return
-
-  // document_start 时 <html> 可能尚未创建。
-  const observer = new MutationObserver(() => {
-    if (insert())
-      observer.disconnect()
-  })
-  observer.observe(document, { childList: true })
+// 主文档使用的样式文本：通配规则换成 @property 注册。结果缓存，重复插入时不再重算。
+export function getSafariHostStyleText(cssText: string): string {
+  if (safariHostStyleCache?.source !== cssText)
+    safariHostStyleCache = { source: cssText, result: replaceUnoPreflightWithRegisteredProperties(cssText) }
+  return safariHostStyleCache.result
 }
