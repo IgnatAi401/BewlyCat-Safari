@@ -171,4 +171,4 @@ README 保持简短（参照旧仓库 `BewlyCat-Safari-Local` 的写法），只
 - [ ] 发布 Release `v1.8.1-safari.1`（附构建压缩包），实测通过后归档 `BewlyCat-Safari-Local`
 - [x] 同步上游 `v1.8.2`，发布 `v1.8.2-safari.1`
 - [x] 同步上游 `v1.8.3`，发布 `v1.8.3-safari.1`
-- [ ] 同步上游 `v1.8.4`（分支 `feat/sync-v1.8.4`），实测后发布 `v1.8.4-safari.1`
+- [x] 同步上游 `v1.8.4`，发布 `v1.8.4-safari.1`
